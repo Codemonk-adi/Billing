@@ -46,16 +46,40 @@ class Aj_billing(object):
         self.curr_date.set(date.today().strftime('%d/%m/%y'))
         self.payment_method = StringVar()
         # self.cust_name.set(str("Aadit"))
-        bg_color = "#000000"
-        fg_color = "red"
+        bg_color = '#351F39'
+        fg_color = '#C70039'
         lbl_color = 'red'
-
+        
         title = Label(self.root, text="Akash Jewellers",bd=12,fg=fg_color,bg=bg_color,font=("Calibri",36 , "bold"),pady=3).pack(fill=X)
-
+        F0 = LabelFrame(text="Firm",font=("Calibri", 12, "bold"), fg="gold", bg=bg_color,
+        relief=RAISED, bd=10)
+        F0.pack(fill=X)
         F1 = LabelFrame(text="Customer Information", font=("Calibri", 12, "bold"), fg="gold", bg=bg_color,
         relief=RAISED, bd=10)
-        F1.place(x=0, y=80, relwidth=1)
+        F1.pack(fill=X)
 
+        F2 = LabelFrame(self.root, text='Details',bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
+        F2.place(x=0,y=305, relwidth=0.72, height=380)
+        
+        Fpre = LabelFrame(self.root, text='Preview',bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
+        Fpre.place(relx=0.72,y=305, relwidth=0.28, height=380)
+        
+        F4 = LabelFrame(self.root,text="Result",bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
+        F4.place(y=685,relwidth=1)
+
+        #Navigation
+        aj_btn = Button(F0, text="Akash", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        command=self.load_aj)
+        abhj_btn = Button(F0, text="Abhushan", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        command=self.load_abj)
+        shrj_btn = Button(F0, text="Shringar", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        command=self.load_sj)
+        gurj_btn = Button(F0, text="Gurukrupa", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        command=self.load_gj)
+        aj_btn.grid(row=0,column=0,padx=10, pady=5)
+        abhj_btn.grid(row=0,column=1,padx=10, pady=5)
+        shrj_btn.grid(row=0,column=2,padx=10, pady=5)
+        gurj_btn.grid(row=0,column=3,padx=10, pady=5)
         #for name
         customername_lbl = Label(F1, text="Customer Name", bg=bg_color, fg=fg_color,
         font=("Calibri", 15, "bold")).grid(row=0, column=0, padx=10, pady=5)
@@ -90,16 +114,9 @@ class Aj_billing(object):
         date_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.curr_date, width=15)
         date_en.grid(row=1, column=4,ipady=4, ipadx=5, pady=5)
 
-        F2 = LabelFrame(self.root, text='Details',bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
-        F2.place(x=0,y=210, relwidth=0.72, height=380)
-        
-        Fpre = LabelFrame(self.root, text='Preview',bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
-        Fpre.place(relx=0.72,y=210, relwidth=0.28, height=380)
         # root.columnconfigure(0,1)
         
-        F4 = LabelFrame(self.root,text="Result",bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
-        F4.place(y=590,relwidth=1)
-
+        
         desc_lbl = Label(F2,text="Particulars", bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=0, padx=20)
         description_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.desc_list[0])
@@ -211,7 +228,18 @@ class Aj_billing(object):
         for w in widgets:
             w.lift()
         
-        
+    def load_aj(self):
+        return
+    
+    def load_abj(self):
+        return
+    
+    def load_sj(self):
+        return
+    
+    def load_gj(self):
+        return
+    
 
     def total_section(self):
         total = 0
@@ -254,10 +282,10 @@ class Aj_billing(object):
         pdf.cell(w=35.7,h=7.1,txt=self.curr_date.get())
         #Name
         pdf.set_xy(37.8,62.7)
-        pdf.cell(w=56.4,h=7.1,txt=self.cust_name.get())
+        pdf.cell(w=56.4,h=7.1,txt=self.cust_name.get().title())
         #Address
         pdf.set_xy(41.1,69.6)
-        pdf.multi_cell(w=58.9,h=8.1,txt=self.cust_add.get())
+        pdf.multi_cell(w=58.9,h=8.1,txt=self.cust_add.get().title())
         #Contact Number
         pdf.set_xy(166.7,69.6)
         pdf.cell(w=39.1,h=8.1,txt=self.cust_num.get())
@@ -266,7 +294,7 @@ class Aj_billing(object):
         for i in range(5):
             if(self.labour_list[i].get() != 0):
                 pdf.set_xy(13,22.1*i+99.8)
-                pdf.multi_cell(w=51.8,h=22.1,align="C",txt=self.desc_list[i].get())
+                pdf.multi_cell(w=51.8,h=22.1,align="C",txt=self.desc_list[i].get().title())
                 pdf.set_xy(65,22.1*i+99.8)
                 pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.gram_list[i].get()))
                 pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.mgram_list[i].get()))
@@ -309,13 +337,21 @@ class Aj_billing(object):
         output_pdf = PdfFileWriter()
         output_pdf.addPage(template_page)
         os.makedirs("Bill_store",exist_ok=True)
-        dirname = os.path.dirname(__file__)
+        
+        if getattr(sys, 'frozen', False):
+        # The application is frozen
+            dirname = os.path.dirname(sys.executable)
+        else:
+            dirname = os.path.dirname(__file__)
+        
         pdfname = str(self.inv_num.get())+str(self.cust_name.get())+".pdf"
         filename = os.path.join(dirname, 'Bill_store/'+pdfname)
         output_pdf.write(open(filename,'wb'))
+        
         os.startfile(filename, "print")
         os.startfile(filename, "open")
         
+    
         return
     
     def exit(self):
@@ -323,5 +359,6 @@ class Aj_billing(object):
         return
     
 root = Tk()
+root.attributes('-fullscreen',True)
 object = Aj_billing(root)
 root.mainloop()
