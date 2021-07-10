@@ -24,10 +24,12 @@ class Customer():
         self.inv_num = IntVar()
         self.particulars = []
         
-class Aj_billing(object):
+    
+class Billing(object):
     def __init__(self, root):
         self.root = root
         self.root.title("AJ")
+        self.title = StringVar()
         self.root.minsize(width=1370, height=720)
         # variables
         self.cust_name = StringVar()
@@ -46,70 +48,76 @@ class Aj_billing(object):
         self.curr_date.set(date.today().strftime('%d/%m/%y'))
         self.payment_method = StringVar()
         # self.cust_name.set(str("Aadit"))
-        bg_color = '#351F39'
-        fg_color = '#C70039'
+        self.bg_color = '#351F39'
+        self.fg_color = '#C70039'
         lbl_color = 'red'
         
-        title = Label(self.root, text="Akash Jewellers",bd=12,fg=fg_color,bg=bg_color,font=("Calibri",36 , "bold"),pady=3).pack(fill=X)
-        F0 = LabelFrame(text="Firm",font=("Calibri", 12, "bold"), fg="gold", bg=bg_color,
+        self.title.set('Akash Jewellers')
+        
+        title = Label(self.root, textvariable=self.title,bd=12,fg=self.fg_color,bg=self.bg_color,font=("Calibri",36 , "bold"),pady=3).pack(fill=X)
+        F0 = LabelFrame(text="Firm",font=("Calibri", 12, "bold"), fg="gold", bg=self.bg_color,
         relief=RAISED, bd=10)
         F0.pack(fill=X)
-        F1 = LabelFrame(text="Customer Information", font=("Calibri", 12, "bold"), fg="gold", bg=bg_color,
-        relief=RAISED, bd=10)
-        F1.pack(fill=X)
-
-        F2 = LabelFrame(self.root, text='Details',bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
-        F2.place(x=0,y=305, relwidth=0.72, height=380)
-        
-        Fpre = LabelFrame(self.root, text='Preview',bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
-        Fpre.place(relx=0.72,y=305, relwidth=0.28, height=380)
-        
-        F4 = LabelFrame(self.root,text="Result",bd=10,relief=RAISED,bg=bg_color, fg='gold', font=("Calibri",18,"bold"))
-        F4.place(y=685,relwidth=1)
 
         #Navigation
-        aj_btn = Button(F0, text="Akash", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        aj_btn = Button(F0, text="Akash", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
         command=self.load_aj)
-        abhj_btn = Button(F0, text="Abhushan", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        abhj_btn = Button(F0, text="Abhushan", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
         command=self.load_abj)
-        shrj_btn = Button(F0, text="Shringar", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        shrj_btn = Button(F0, text="Shringar", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
         command=self.load_sj)
-        gurj_btn = Button(F0, text="Gurukrupa", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        gurj_btn = Button(F0, text="Gurukrupa", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
         command=self.load_gj)
         aj_btn.grid(row=0,column=0,padx=10, pady=5)
         abhj_btn.grid(row=0,column=1,padx=10, pady=5)
         shrj_btn.grid(row=0,column=2,padx=10, pady=5)
         gurj_btn.grid(row=0,column=3,padx=10, pady=5)
+        
+        #Akash Jewellers
+        FAJ = Frame()
+        F1 = LabelFrame(FAJ,text="Customer Information", font=("Calibri", 12, "bold"), fg="gold", bg=self.bg_color,
+        relief=RAISED, bd=10)
+        F1.place(x=0,y=0,relwidth=1,relheight=0.2)
+
+        F2 = LabelFrame(FAJ,text='Details',bd=10,relief=RAISED,bg=self.bg_color, fg='gold', font=("Calibri",18,"bold"))
+        F2.place(x=0,rely=0.2, relwidth=0.72, relheight=0.6)
+        
+        Fpre = LabelFrame(FAJ, text='Preview',bd=10,relief=RAISED,bg=self.bg_color, fg='gold', font=("Calibri",18,"bold"))
+        Fpre.place(relx=0.72,rely=0.2, relwidth=0.28, relheight=0.6)
+        
+        F4 = LabelFrame(FAJ,text="Result",bd=10,relief=RAISED,bg=self.bg_color, fg='gold', font=("Calibri",18,"bold"))
+        F4.place(rely=0.8,relwidth=1,relheight=0.2)
+        
         #for name
-        customername_lbl = Label(F1, text="Customer Name", bg=bg_color, fg=fg_color,
+        customername_lbl = Label(F1, text="Customer Name", bg=self.bg_color, fg=self.fg_color,
         font=("Calibri", 15, "bold")).grid(row=0, column=0, padx=10, pady=5)
         customername_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.cust_name)
         customername_en.grid(row=0, column=1, ipady=4, ipadx=30, pady=5)
         
         # This function for customer contact number
-        customercontact_lbl = Label(F1, text="Phone No", bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        customercontact_lbl = Label(F1, text="Phone No", bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=2, padx=20)
         customercontact_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.cust_num)
         customercontact_en.grid(row=0, column=3, ipady=4, ipadx=30, pady=5)
         # This fucntion for Invoice Number
-        customerinvoice_lbl = Label(F1, text="Invoice No.", bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(row=0, column=4, padx=20)
+        customerinvoice_lbl = Label(F1, text="Invoice No.", bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(row=0, column=4, padx=20)
         customerinvoice_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.inv_num)
         customerinvoice_en.grid(row=0, column=5, ipadx=30, ipady=4, pady=5)
 
         # #button
-        # invoice_btn = Button(F1, text="Enter", bd=7, relief=RAISED, font=("Calibri", 12, "bold"), bg=bg_color,
-        # fg=fg_color)
+        # invoice_btn = Button(F1, text="Enter", bd=7, relief=RAISED, font=("Calibri", 12, "bold"), bg=self.bg_color,
+        # fg=self.fg_color)
         # invoice_btn.grid(row=0, column=6, ipady=5, padx=60, ipadx=19, pady=5)
 
         # This function for customer address
-        customeraddress_lbl = Label(F1, text="Address", bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        customeraddress_lbl = Label(F1, text="Address", bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=1, column=0, padx=20)
         customeraddress_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.cust_add, width=50)
         customeraddress_en.grid(row=1, column=1, columnspan=2, ipady=4, ipadx=30, pady=5)
         
 
         #date
-        date_lbl = Label(F1,text="Date", bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        date_lbl = Label(F1,text="Date", bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=1, column=3, padx=20)
         date_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.curr_date, width=15)
         date_en.grid(row=1, column=4,ipady=4, ipadx=5, pady=5)
@@ -117,7 +125,7 @@ class Aj_billing(object):
         # root.columnconfigure(0,1)
         
         
-        desc_lbl = Label(F2,text="Particulars", bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        desc_lbl = Label(F2,text="Particulars", bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=0, padx=20)
         description_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.desc_list[0])
         description_0.grid(row=1,column=0,padx=5, pady=10, ipady=5, ipadx=5)
@@ -130,7 +138,7 @@ class Aj_billing(object):
         description_4 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.desc_list[4])
         description_4.grid(row=5,column=0,padx=5, pady=10, ipady=5, ipadx=5)
 
-        W_gram_lbl = Label(F2, text="Gram",bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        W_gram_lbl = Label(F2, text="Gram",bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=1, padx=20)
         gram_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.gram_list[0])
         gram_0.grid(row=1,column=1,padx=2, pady=10, ipady=5, ipadx=2)
@@ -143,7 +151,7 @@ class Aj_billing(object):
         gram_4 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.gram_list[4])
         gram_4.grid(row=5,column=1,padx=2, pady=10, ipady=5, ipadx=2)
 
-        W_milli_gram_lbl = Label(F2, text="Milli Gram",bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        W_milli_gram_lbl = Label(F2, text="Milli Gram",bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=2, padx=20)
         mgram_0 = Entry(F2,relief=RAISED,textvariable=self.mgram_list[0],bg="pink",font=('Calibri', 18, "bold"))
         mgram_0.grid(row=1,column=2,padx=2, pady=10, ipady=5, ipadx=2)
@@ -156,7 +164,7 @@ class Aj_billing(object):
         mgram_4 = Entry(F2,relief=RAISED,textvariable=self.mgram_list[4],bg="pink",font=('Calibri', 18, "bold"))
         mgram_4.grid(row=5,column=2,padx=2, pady=10, ipady=5, ipadx=2)
 
-        rate_lbl = Label(F2, text="Rate(per gram)",bg=bg_color, fg=fg_color,font=("Calibri", 15, "bold")).grid(row=0, column=3, padx=20)
+        rate_lbl = Label(F2, text="Rate(per gram)",bg=self.bg_color, fg=self.fg_color,font=("Calibri", 15, "bold")).grid(row=0, column=3, padx=20)
         rate_0 = Entry(F2,relief=RAISED,textvariable=self.rate_list[0],bg="pink",font=('Calibri', 18, "bold"))
         rate_0.grid(row=1,column=3,padx=2, pady=10, ipady=5, ipadx=2)
         rate_1 = Entry(F2,relief=RAISED,textvariable=self.rate_list[1],font=('Calibri', 18, "bold"))
@@ -172,7 +180,7 @@ class Aj_billing(object):
         # Fr.columnconfigure(0,weight=1)
         
         
-        labour_charge_lbl = Label(F2, text="Labour",bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        labour_charge_lbl = Label(F2, text="Labour",bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=4, padx=20)
         labour_charge_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.labour_list[0])
         labour_charge_0.grid(row=1,column=4,padx=2, pady=10, ipady=5, ipadx=2)
@@ -187,30 +195,30 @@ class Aj_billing(object):
         
         # Fl.columnconfigure(0,weight=1)
 
-        total_lbl = Label(F4, text="Total",bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        total_lbl = Label(F4, text="Total",bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=0, padx=20)
         total_en = Entry(F4,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.total)
         total_en.grid(row=1,column=0,padx=5)
         #payment methods
-        payment_lbl = Label(F4, text="Payment Method",bg=bg_color, fg=fg_color, font=("Calibri", 15, "bold")).grid(
+        payment_lbl = Label(F4, text="Payment Method",bg=self.bg_color, fg=self.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=1, padx=20)
         payment_en = Entry(F4,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.payment_method).grid(row=1,column=1,padx=5)
 
         #buttons
-        total_btn = Button(F4, text="Total", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        total_btn = Button(F4, text="Total", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
         command=self.total_section)
         total_btn.grid(row=1, column=4, ipadx=20, padx=30)
         
         # This function for Generate Bill
-        generatebill_button = Button(F4, text="Generate Bill", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.billing_section)
+        generatebill_button = Button(F4, text="Generate Bill", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.billing_section)
         generatebill_button.grid(row=1, column=5, ipadx=20)
         
         # This function for Clear Button
-        clear_button = Button(F4, text="Clear", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.clear)
+        clear_button = Button(F4, text="Clear", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.clear)
         clear_button.grid(row=1, column=6, ipadx=20, padx=30)
         
         # This function for Exit Button
-        exit_buttonn = Button(F4, text="Exit", bg=bg_color, fg=fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.exit)
+        exit_buttonn = Button(F4, text="Exit", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.exit)
         exit_buttonn.grid(row=1, column=7, ipadx=20)
         
         F4.rowconfigure(1,weight=1)
@@ -228,16 +236,23 @@ class Aj_billing(object):
         for w in widgets:
             w.lift()
         
+        FAJ.pack(fill='both',expand=True)
+        
     def load_aj(self):
+        self.title.set("Akash Jewellers")
+        
         return
     
     def load_abj(self):
+        self.title.set("Abhushan Jewellers")
         return
     
     def load_sj(self):
+        self.title.set("Shringar Jewellers")
         return
     
     def load_gj(self):
+        self.title.set("Gurukrupa Jewellers")
         return
     
 
@@ -264,7 +279,7 @@ class Aj_billing(object):
             self.mgram_list[i].set(0)
             self.rate_list[i].set(0)
             self.labour_list[i].set(0)
-            self.total_list[i]=0
+            self.total_list[i].set(0)
         return
         # This function for Add Product name , qty and price to bill section
         
@@ -360,5 +375,5 @@ class Aj_billing(object):
     
 root = Tk()
 root.attributes('-fullscreen',True)
-object = Aj_billing(root)
+object = Billing(root)
 root.mainloop()
