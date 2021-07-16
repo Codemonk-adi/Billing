@@ -396,14 +396,14 @@ class page_rest(Page):
         customername_en.grid(row=0, column=1, ipady=4, ipadx=30, pady=5)
         
         # This function for customer contact number
-        customercontact_lbl = Label(F1, text="Phone No", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
+        customergst_lbl = Label(F1, text="GST Number", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=2, padx=20)
         customergst_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.gst_num)
-        customergst_en.grid(row=0, column=3, ipady=4, ipadx=30, pady=5)
+        customergst_en.grid(row=0, column=3,columnspan=2, ipady=4, ipadx=30, pady=5)
         # This fucntion for Invoice Number
-        customerinvoice_lbl = Label(F1, text="Invoice No.", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(row=0, column=4, padx=20)
+        customerinvoice_lbl = Label(F1, text="Invoice No.", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(row=0, column=5, padx=20)
         customerinvoice_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.inv_num)
-        customerinvoice_en.grid(row=0, column=5, ipadx=30, ipady=4, pady=5)
+        customerinvoice_en.grid(row=0, column=6, ipadx=30, ipady=4, pady=5)
 
         # #button
         # invoice_btn = Button(F1, text="Enter", bd=7, relief=RAISED, font=("Calibri", 12, "bold"), bg=self.data.bg_color,
@@ -584,7 +584,13 @@ class Billing(object):
         self.FAJ.place(in_=F1,x=0,y=0,relwidth=1,relheight=1)
         self.FABH = page_rest(0)
         self.FABH.place(in_=F1,x=0,y=0,relwidth=1,relheight=1)
-        self.FABH.show()
+        self.FSHR = page_rest(1)
+        self.FSHR.place(in_=F1,x=0,y=0,relwidth=1,relheight=1)
+        self.FGUR = page_rest(2)
+        self.FGUR.place(in_=F1,x=0,y=0,relwidth=1,relheight=1)
+        self.FAJ.show()
+        
+        
     def load_aj(self):
         self.title.set("Akash Jewellers")
         self.FAJ.show()
@@ -597,10 +603,12 @@ class Billing(object):
     
     def load_sj(self):
         self.title.set("Shringar Jewellers")
+        self.FSHR.show()
         return
     
     def load_gj(self):
         self.title.set("Gurukrupa Jewellers")
+        self.FGUR.show()
         return
     
 
