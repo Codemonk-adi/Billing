@@ -7,9 +7,28 @@ from typing import Container
 from fpdf import FPDF
 from PyPDF2 import PdfFileReader,PdfFileWriter
 import os
+import details
 # -*- coding: utf-8 -*-
 
 
+def formatter(num):
+    format_total=""
+    total_copy = int(float(num))
+    if(total_copy<1000):
+        format_total=str(total_copy)
+    else:
+        format_total="{:0>3d}".format(total_copy%1000)
+        total_copy=int(total_copy/1000)
+        format_total=","+format_total
+        while(total_copy>99):
+            format_total=","+"{:0>2d}".format(total_copy%100) + format_total
+            total_copy=int(total_copy/100)
+        if(total_copy!=0):
+            format_total=str(total_copy)+format_total
+        format_total="₹"+format_total
+    return format_total
+        
+    
 # coding
 class Customer():
     def __init__(self):
@@ -42,6 +61,9 @@ class data_rest():
         self.gram_list = [IntVar() for i in range(5)]
         self.mgram_list = [IntVar() for i in range(5)]
         self.rate_list = [IntVar() for i in range(5)]
+        self.total_gram = IntVar()
+        self.total_mgram = IntVar()
+        self.total_tax = DoubleVar()
         # self.labour_list = [IntVar() for i in range(5)]
         self.total_pretax_list = [DoubleVar() for i in range(5)]
         self.tax_list = [DoubleVar() for i in range(5)]
@@ -284,6 +306,7 @@ class Page_aj(Page):
             self.total_section()
         pdf=FPDF(orientation='P', unit='mm', format='A4')
         pdf.add_font('Times_uni',fname="Quivira.otf",uni=True)
+        pdf.add_font('Times_uniB',fname="arialB.ttf",uni=True)
         pdf.add_page()
         pdf.set_font("Times_uni",size=11)
         #Invoice Number
@@ -348,7 +371,7 @@ class Page_aj(Page):
         template_page.mergePage(overlay_pdf.getPage(0))
         output_pdf = PdfFileWriter()
         output_pdf.addPage(template_page)
-        os.makedirs("Bill_store",exist_ok=True)
+        os.makedirs("Bill_store/Akash",exist_ok=True)
         
         if getattr(sys, 'frozen', False):
         # The application is frozen
@@ -357,7 +380,7 @@ class Page_aj(Page):
             dirname = os.path.dirname(__file__)
         
         pdfname = str(self.data.inv_num.get())+str(self.data.cust_name.get())+".pdf"
-        self.data.filename = os.path.join(dirname, 'Bill_store/'+pdfname)
+        self.data.filename = os.path.join(dirname, 'Bill_store/Akash/'+pdfname)
         output_pdf.write(open(self.data.filename,'wb'))
         
         os.startfile(self.data.filename, "open")
@@ -375,6 +398,7 @@ class Page_aj(Page):
 class page_rest(Page):
     def __init__(self,firm):
         Page.__init__(self)
+        self.firm = firm
         self.data = data_rest()
         F1 = LabelFrame(self,text="Customer Information", font=("Calibri", 12, "bold"), fg="gold", bg=self.data.bg_color,
         relief=RAISED, bd=10)
@@ -539,12 +563,132 @@ class page_rest(Page):
             w.lift()
 
     def total_section(self):
+        total = 0
+        total_mg = 0
+        total_g =0
+        #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
+        for i in range(5):
+            if(self.data.rate_list[i].get() != 0):
+                self.data.total_pretax_list[i].set(round((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get())))
+                self.data.total_posttax_list[i].set(round(self.data.total_pretax_list[i].get()*1.03,1))
+                self.data.tax_list[i].set(round(self.data.total_pretax_list[i].get()*0.015,1))
+                total+=self.data.total_pretax_list[i].get()
+                total_mg += self.data.mgram_list[i].get()
+                total_g += self.data.gram_list[i].get()
+        self.data.pretotal.set(total)
+        self.data.total_tax.set(total*0.015)
+        self.data.total_mgram.set(total_mg%1000)
+        self.data.total_gram.set(total_g + int(total_mg/1000))
+        self.data.posttotal.set(round(total*1.03))
+        self.data.istotaled = True
         return
+        
     def billing_section(self):
+        if(self.data.istotaled == False):
+            self.total_section()
+            
+        pdf=FPDF(orientation='P', unit='mm', format='A4')
+        pdf.add_font('Times_uniB',fname="arialB.ttf",uni=True)
+        pdf.add_font('Times_uni',fname="Quivira.otf",uni=True)
+        pdf.add_page()
+        pdf.set_font("Times_uni",size=11)
+        #Invoice Number
+        pdf.set_xy(31.3,53.6)
+        pdf.cell(w=10.2,h=3.5,align='L',txt=str(self.data.inv_num.get()))
+        #Date   
+        pdf.set_xy(135.4,53.6)
+        pdf.cell(w=15,h=3.5,align='L',txt=self.data.curr_date.get())
+        #Name
+        pdf.set_xy(23.9,61.7)
+        pdf.cell(w=56.4,h=3.5,align='L',txt=self.data.cust_name.get().title())
+        #Address
+        pdf.set_xy(27.2,68.6)
+        pdf.multi_cell(w=58.9,h=7,align='L',txt=self.data.cust_add.get().title())
+        #Gst Number
+        pdf.set_xy(141.2,68.6)
+        pdf.cell(w=39.1,h=3.5,align='L',txt=self.data.gst_num.get())
+        
+        #Details
+        for i in range(5):
+            if(self.data.rate_list[i].get() != 0):
+                pdf.set_xy(2.8,22.1*i+88.1)
+                pdf.multi_cell(w=40.9,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
+                pdf.set_xy(43.7,22.1*i+88.1)
+                pdf.cell(w=19.3,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
+                pdf.cell(w=19.6,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
+                pdf.cell(w=22.1,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
+                pdf.cell(w=25.1,h=22.1,align="C",txt=str(self.data.total_pretax_list[i].get()))
+                pdf.cell(w=19.1,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
+                pdf.cell(w=18.3,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
+                pdf.cell(w=40.1,h=22.1,align="C",txt=str(self.data.total_posttax_list[i].get()))
+
+        #summary
+        pdf.set_font("Times_uniB",size=11)
+        pdf.set_xy(43.7,203)
+        pdf.cell(w=19.3,h=9.7,align="C",markdown=True,txt=str(self.data.total_gram.get()))
+        pdf.cell(w=19.6,h=9.7,align="C",txt=str(self.data.total_mgram.get()).zfill(3))
+        pdf.set_xy(104.7,203)
+        pdf.cell(w=25.1,h=9.7,align="C",txt=formatter(self.data.pretotal.get()))
+        pdf.cell(w=19.1,h=9.7,align="C",txt=formatter(self.data.total_tax.get()))
+        pdf.cell(w=18.3,h=9.7,align="C",txt=formatter(self.data.total_tax.get()))
+        pdf.cell(w=40.1,h=9.7,align="C",txt=formatter(self.data.posttotal.get()))
+        
+        #Account info
+        pdf.set_font("Times_uni",size=11)
+        pdf.set_xy(25,235.9)
+        pdf.cell(w=32,h=3,align='L',txt = details.ac[self.firm])
+        pdf.set_xy(30.7,240.8)
+        pdf.cell(w=32,h=3,align='L',txt = details.ifsc[self.firm])
+
+        #sign
+        pdf.set_xy(154.2,257.8)
+        pdf.cell(w=30,h=3.5,align='L',txt=details.name[self.firm])
+                
+        pdf.output("temp.pdf")
+        pdf.close()
+        
+        pdf_template = PdfFileReader(open("Wholesale_template_v3.pdf","rb"))
+        template_page = pdf_template.getPage(0)
+        overlay_pdf=    PdfFileReader(open("temp.pdf",'rb'))
+        template_page.mergePage(overlay_pdf.getPage(0))
+        output_pdf = PdfFileWriter()
+        output_pdf.addPage(template_page)
+        os.makedirs("Bill_store/"+details.nam[self.firm],exist_ok=True)
+        if getattr(sys, 'frozen', False):
+        # The application is frozen
+            dirname = os.path.dirname(sys.executable)
+        else:
+            dirname = os.path.dirname(__file__)
+        
+        pdfname = str(self.data.inv_num.get())+str(self.data.cust_name.get())+".pdf"
+        self.data.filename = os.path.join(dirname, 'Bill_store/'+details.nam[self.firm]+'/'+pdfname)
+        output_pdf.write(open(self.data.filename,'wb'))
+        
+        # os.startfile(filename, "print")
+        os.startfile(self.data.filename, "open")
         return
     def clear(self):
+        self.data.istotaled = False
+        self.data.isgenerated = False
+        self.data.cust_name.set('')
+        self.data.cust_add.set('')
+        self.data.gst_num.set('')
+        self.data.inv_num.set(self.data.inv_num.get()+1)
+        for i in range(5):
+            self.data.desc_list[i].set('')
+            self.data.gram_list[i].set(0)
+            self.data.mgram_list[i].set(0)
+            self.data.rate_list[i].set(0)
+            self.data.total_pretax_list[i].set(0)
+            self.data.total_posttax_list[i].set(0)
+            self.data.tax_list[i].set(0)
+        self.data.pretotal.set('')
+        self.data.posttotal.set('')
         return
     def print_bill(self):
+        if(self.data.isgenerated == False):
+            self.billing_section()
+        os.startfile(self.data.filename, "print")
         return
 class Billing(object):
     def __init__(self, root):
@@ -612,33 +756,6 @@ class Billing(object):
         return
     
 
-    def total_section(self):
-        total = 0
-        #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
-        for i in range(5):
-            if(self.labour_list[i].get() != 0):
-                self.total_list[i].set((self.gram_list[i].get() +(self.mgram_list[i].get()/1000))*(self.rate_list[i].get()+self.labour_list[i].get())*1.03)
-                total+=self.total_list[i].get()
-        self.total.set(int(total))
-        return
-    def welcome_customer(self):
-        return
-    def clear(self):
-        self.cust_name.set('')
-        self.cust_add.set('')
-        self.cust_num.set('')
-        self.inv_num.set(self.inv_num.get()+1)
-        self.total.set('')
-        for i in range(5):
-            self.desc_list[i].set('')
-            self.gram_list[i].set(0)
-            self.mgram_list[i].set(0)
-            self.rate_list[i].set(0)
-            self.labour_list[i].set(0)
-            self.total_list[i].set(0)
-        return
-        # This function for Add Product name , qty and price to bill section
-        
     def billing_section(self):
         self.total_section()
         pdf=FPDF(orientation='P', unit='mm', format='A4')
@@ -668,7 +785,7 @@ class Billing(object):
                 pdf.multi_cell(w=51.8,h=22.1,align="C",txt=self.desc_list[i].get().title())
                 pdf.set_xy(65,22.1*i+99.8)
                 pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.gram_list[i].get()))
-                pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.mgram_list[i].get()))
+                pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.mgram_list[i].get()).zfill(3))
                 pdf.cell(w=23.4,h=22.1,align="C",txt=str(self.rate_list[i].get()))
                 pdf.cell(w=27.7,h=22.1,align="C",txt=str(self.labour_list[i].get()))
                 pdf.cell(w=24.6,h=22.1,align="C",txt="3%")
@@ -721,12 +838,6 @@ class Billing(object):
         
         # os.startfile(filename, "print")
         os.startfile(self.filename, "open")
-        
-    
-        return
-    
-    def exit(self):
-        self.root.destroy()
         return
     
 root = Tk()
