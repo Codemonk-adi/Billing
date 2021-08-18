@@ -345,22 +345,7 @@ class Page_aj(Page):
         
         #Total
         pdf.set_xy(169.2,233.4)
-        format_total=""
-        total_copy = int(self.data.total.get())
-        if(total_copy<1000):
-            format_total=str(total_copy)
-        else:
-            format_total="{:0>3d}".format(total_copy%1000)
-            total_copy=int(total_copy/1000)
-            format_total=","+format_total
-            while(total_copy>99):
-                format_total=","+"{:0>2d}".format(total_copy%100) + format_total
-                total_copy=int(total_copy/100)
-            if(total_copy!=0):
-                format_total=str(total_copy)+format_total
-        format_total="₹"+format_total
-        # print(format_total.encode().decode(encoding='utf-8'))
-        pdf.cell(w=34,h=18.3,txt=format_total)
+        pdf.cell(w=34,h=18.3,txt=formatter(self.data.total.get()))
         
         pdf.output("temp.pdf")
         pdf.close()
@@ -420,7 +405,7 @@ class page_rest(Page):
         customername_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_name)
         customername_en.grid(row=0, column=1, ipady=4, ipadx=30, pady=2)
         
-        # This function for customer contact number
+        # This function for GST number
         customergst_lbl = Label(F1, text="GST Number", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=2, padx=20)
         customergst_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.gst_num)
@@ -571,7 +556,7 @@ class page_rest(Page):
         for i in range(5):
             if(self.data.rate_list[i].get() != 0):
                 self.data.total_pretax_list[i].set(round((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get())))
-                self.data.total_posttax_list[i].set(round(self.data.total_pretax_list[i].get()*1.03,1))
+                self.data.total_posttax_list[i].set(round(self.data.total_pretax_list[i].get()*1.03,2))
                 self.data.tax_list[i].set(round(self.data.total_pretax_list[i].get()*0.015,1))
                 total+=self.data.total_pretax_list[i].get()
                 total_mg += self.data.mgram_list[i].get()
@@ -581,14 +566,17 @@ class page_rest(Page):
         self.data.total_mgram.set(total_mg%1000)
         self.data.total_gram.set(total_g + int(total_mg/1000))
         self.data.posttotal.set(round(total*1.03))
-        self.data.istotaled = True
         return
         
     def billing_section(self):
-        if(self.data.istotaled == False):
-            self.total_section()
-            
+        self.total_section()
         pdf=FPDF(orientation='P', unit='mm', format='A4')
+        state = True
+        if(self.data.gst_num.get()[:2] == '27'):
+            state=True
+        else:
+            state=False
+    
         pdf.add_font('Times_uniB',fname="arialB.ttf",uni=True)
         pdf.add_font('Times_uni',fname="Quivira.otf",uni=True)
         pdf.add_page()
@@ -607,33 +595,8 @@ class page_rest(Page):
         pdf.multi_cell(w=58.9,h=7,align='L',txt=self.data.cust_add.get().title())
         #Gst Number
         pdf.set_xy(141.2,68.6)
-        pdf.cell(w=39.1,h=3.5,align='L',txt=self.data.gst_num.get())
-        
-        #Details
-        for i in range(5):
-            if(self.data.rate_list[i].get() != 0):
-                pdf.set_xy(2.8,22.1*i+88.1)
-                pdf.multi_cell(w=40.9,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
-                pdf.set_xy(43.7,22.1*i+88.1)
-                pdf.cell(w=19.3,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
-                pdf.cell(w=19.6,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
-                pdf.cell(w=22.1,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
-                pdf.cell(w=25.1,h=22.1,align="C",txt=str(self.data.total_pretax_list[i].get()))
-                pdf.cell(w=19.1,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
-                pdf.cell(w=18.3,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
-                pdf.cell(w=40.1,h=22.1,align="C",txt=str(self.data.total_posttax_list[i].get()))
-
-        #summary
-        pdf.set_font("Times_uniB",size=11)
-        pdf.set_xy(43.7,203)
-        pdf.cell(w=19.3,h=9.7,align="C",markdown=True,txt=str(self.data.total_gram.get()))
-        pdf.cell(w=19.6,h=9.7,align="C",txt=str(self.data.total_mgram.get()).zfill(3))
-        pdf.set_xy(104.7,203)
-        pdf.cell(w=25.1,h=9.7,align="C",txt=formatter(self.data.pretotal.get()))
-        pdf.cell(w=19.1,h=9.7,align="C",txt=formatter(self.data.total_tax.get()))
-        pdf.cell(w=18.3,h=9.7,align="C",txt=formatter(self.data.total_tax.get()))
-        pdf.cell(w=40.1,h=9.7,align="C",txt=formatter(self.data.posttotal.get()))
-        
+        pdf.cell(w=39.1,h=3.5,align='L',txt=self.data.gst_num.get().upper())
+        # 
         #Account info
         pdf.set_font("Times_uni",size=11)
         pdf.set_xy(25,235.9)
@@ -644,11 +607,64 @@ class page_rest(Page):
         #sign
         pdf.set_xy(154.2,257.8)
         pdf.cell(w=30,h=3.5,align='L',txt=details.name[self.firm])
-                
+        
+        if(state):
+            #Details
+            for i in range(5):
+                if(self.data.rate_list[i].get() != 0):
+                    pdf.set_xy(2.8,22.1*i+88.1)
+                    pdf.multi_cell(w=40.9,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
+                    pdf.set_xy(43.7,22.1*i+88.1)
+                    pdf.cell(w=19.3,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
+                    pdf.cell(w=19.6,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
+                    pdf.cell(w=22.1,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
+                    pdf.cell(w=25.1,h=22.1,align="C",txt=str(self.data.total_pretax_list[i].get()))
+                    pdf.cell(w=19.1,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
+                    pdf.cell(w=18.3,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
+                    pdf.cell(w=40.1,h=22.1,align="C",txt=str(self.data.total_posttax_list[i].get()))
+
+            #summary
+            pdf.set_font("Times_uniB",size=11)
+            pdf.set_xy(43.7,203)
+            pdf.cell(w=19.3,h=9.7,align="C",markdown=True,txt=str(self.data.total_gram.get()))
+            pdf.cell(w=19.6,h=9.7,align="C",txt=str(self.data.total_mgram.get()).zfill(3))
+            pdf.set_xy(104.7,203)
+            pdf.cell(w=25.1,h=9.7,align="C",txt=formatter(self.data.pretotal.get()))
+            pdf.cell(w=19.1,h=9.7,align="C",txt=formatter(self.data.total_tax.get()))
+            pdf.cell(w=18.3,h=9.7,align="C",txt=formatter(self.data.total_tax.get()))
+            pdf.cell(w=40.1,h=9.7,align="C",txt=formatter(self.data.posttotal.get()))
+            
+            
+        else:
+            
+            #Details
+            for i in range(5):
+                if(self.data.rate_list[i].get() != 0):
+                    pdf.set_xy(2.8,22.1*i+88.1)
+                    pdf.multi_cell(w=40.9,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
+                    pdf.set_xy(43.7,22.1*i+88.1)
+                    pdf.cell(w=19.3,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
+                    pdf.cell(w=19.6,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
+                    pdf.cell(w=22.1,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
+                    pdf.cell(w=40,h=22.1,align="C",txt=str(self.data.total_pretax_list[i].get()))
+                    pdf.cell(w=22.5,h=22.1,align="C",txt=str(self.data.tax_list[i].get()*2))
+                    pdf.cell(w=40.1,h=22.1,align="C",txt=str(self.data.total_posttax_list[i].get()))
+
+            #summary
+            pdf.set_font("Times_uniB",size=11)
+            pdf.set_xy(43.7,203)
+            pdf.cell(w=19.3,h=9.7,align="C",markdown=True,txt=str(self.data.total_gram.get()))
+            pdf.cell(w=19.6,h=9.7,align="C",txt=str(self.data.total_mgram.get()).zfill(3))
+            pdf.set_xy(104.7,203)
+            pdf.cell(w=40,h=9.7,align="C",txt=formatter(self.data.pretotal.get()))
+            pdf.cell(w=22.5,h=9.7,align="C",txt=formatter(self.data.total_tax.get()*2))
+            pdf.cell(w=40.1,h=9.7,align="C",txt=formatter(self.data.posttotal.get()))                    
         pdf.output("temp.pdf")
         pdf.close()
-        
-        pdf_template = PdfFileReader(open("Wholesale_template_v3.pdf","rb"))
+        if(state):
+            pdf_template = PdfFileReader(open("Wholesale_template_v3.pdf","rb"))
+        else:
+            pdf_template = PdfFileReader(open("wholesale_template_igst.pdf","rb"))
         template_page = pdf_template.getPage(0)
         overlay_pdf=    PdfFileReader(open("temp.pdf",'rb'))
         template_page.mergePage(overlay_pdf.getPage(0))
@@ -670,8 +686,6 @@ class page_rest(Page):
         os.startfile(self.data.filename, "open")
         return
     def clear(self):
-        self.data.istotaled = False
-        self.data.isgenerated = False
         self.data.cust_name.set('')
         self.data.cust_add.set('')
         self.data.gst_num.set('')
@@ -688,8 +702,7 @@ class page_rest(Page):
         self.data.posttotal.set('')
         return
     def print_bill(self):
-        if(self.data.isgenerated == False):
-            self.billing_section()
+        self.billing_section()
         os.startfile(self.data.filename, "print")
         return
 class Billing(object):
@@ -697,7 +710,7 @@ class Billing(object):
         self.root = root
         self.root.title("AJ")
         self.title = StringVar()
-        self.root.minsize(width=1370, height=720)
+        # self.root.minsize(width=1, height=720)
         # variables
         self.bg_color = '#f8edeb'
         self.fg_color = '#C70039'
@@ -758,91 +771,10 @@ class Billing(object):
         return
     
 
-    # def billing_section(self):
-    #     self.total_section()
-    #     pdf=FPDF(orientation='P', unit='mm', format='A4')
-    #     pdf.add_font('Times_uni',fname="Quivira.otf",uni=True)
-    #     pdf.add_page()
-    #     pdf.set_font("Times_uni",size=11)
-    #     #Invoice Number
-    #     pdf.set_xy(45.7,54.8)
-    #     pdf.cell(w=41.4,h=7.1,align='L',txt=str(self.inv_num.get()))
-    #     #Date
-    #     pdf.set_xy(149.4,54.8)
-    #     pdf.cell(w=35.7,h=7.1,txt=self.curr_date.get())
-    #     #Name
-    #     pdf.set_xy(37.8,62.7)
-    #     pdf.cell(w=56.4,h=7.1,txt=self.cust_name.get().title())
-    #     #Address
-    #     pdf.set_xy(41.1,69.6)
-    #     pdf.multi_cell(w=58.9,h=8.1,txt=self.cust_add.get().title())
-    #     #Contact Number
-    #     pdf.set_xy(166.7,69.6)
-    #     pdf.cell(w=39.1,h=8.1,txt=self.cust_num.get())
-        
-    #     #Details
-    #     for i in range(5):
-    #         if(self.labour_list[i].get() != 0):
-    #             pdf.set_xy(13,22.1*i+99.8)
-    #             pdf.multi_cell(w=51.8,h=22.1,align="C",txt=self.desc_list[i].get().title())
-    #             pdf.set_xy(65,22.1*i+99.8)
-    #             pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.gram_list[i].get()))
-    #             pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.mgram_list[i].get()).zfill(3))
-    #             pdf.cell(w=23.4,h=22.1,align="C",txt=str(self.rate_list[i].get()))
-    #             pdf.cell(w=27.7,h=22.1,align="C",txt=str(self.labour_list[i].get()))
-    #             pdf.cell(w=24.6,h=22.1,align="C",txt="3%")
-    #             pdf.cell(w=33.8,h=22.1,align="C",txt=str(self.total_list[i].get()))
-        
-    #     #Payment Method
-    #     pdf.set_xy(15.7,239.5)
-    #     pdf.set_font(family="Times_uni",size=12)
-    #     pdf.cell(w=29.2,h=7.9,txt=self.payment_method.get())
-        
-    #     #Total
-    #     pdf.set_xy(169.2,233.4)
-    #     format_total=""
-    #     total_copy = int(self.total.get())
-    #     if(total_copy<1000):
-    #         format_total=str(total_copy)
-    #     else:
-    #         format_total="{:0>3d}".format(total_copy%1000)
-    #         total_copy=int(total_copy/1000)
-    #         format_total=","+format_total
-    #         while(total_copy>99):
-    #             format_total=","+"{:0>2d}".format(total_copy%100) + format_total
-    #             total_copy=int(total_copy/100)
-    #         if(total_copy!=0):
-    #             format_total=str(total_copy)+format_total
-    #     format_total="₹"+format_total
-    #     # print(format_total.encode().decode(encoding='utf-8'))
-    #     pdf.cell(w=34,h=18.3,txt=format_total)
-        
-    #     pdf.output("temp.pdf")
-    #     pdf.close()
-        
-    #     pdf_template = PdfFileReader(open("bill_temp_v3.pdf","rb"))
-    #     template_page = pdf_template.getPage(0)
-    #     overlay_pdf=    PdfFileReader(open("temp.pdf",'rb'))
-    #     template_page.mergePage(overlay_pdf.getPage(0))
-    #     output_pdf = PdfFileWriter()
-    #     output_pdf.addPage(template_page)
-    #     os.makedirs("Bill_store",exist_ok=True)
-        
-    #     if getattr(sys, 'frozen', False):
-    #     # The application is frozen
-    #         dirname = os.path.dirname(sys.executable)
-    #     else:
-    #         dirname = os.path.dirname(__file__)
-        
-    #     pdfname = str(self.inv_num.get())+str(self.cust_name.get())+".pdf"
-    #     self.filename = os.path.join(dirname, 'Bill_store/'+pdfname)
-    #     output_pdf.write(open(self.filename,'wb'))
-        
-    #     # os.startfile(filename, "print")
-    #     os.startfile(self.filename, "open")
-    #     return
-    
 root = Tk()
+width = root.winfo_screenwidth()
+height = int(root.winfo_screenheight()*0.9)
+root.geometry("%dx%d+0+0" % (width, height))
 root.resizable(True, True)
 def on_closing():
     if messagebox.askokcancel("Quit", "Do you want to Exit?"):
