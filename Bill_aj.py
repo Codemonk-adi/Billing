@@ -626,7 +626,7 @@ class page_rest(Page):
             #summary
             pdf.set_font("Times_uniB",size=11)
             pdf.set_xy(43.7,203)
-            pdf.cell(w=19.3,h=9.7,align="C",markdown=True,txt=str(self.data.total_gram.get()))
+            pdf.cell(w=19.3,h=9.7,align="C",txt=str(self.data.total_gram.get()))
             pdf.cell(w=19.6,h=9.7,align="C",txt=str(self.data.total_mgram.get()).zfill(3))
             pdf.set_xy(104.7,203)
             pdf.cell(w=25.1,h=9.7,align="C",txt=formatter(self.data.pretotal.get()))
@@ -653,7 +653,7 @@ class page_rest(Page):
             #summary
             pdf.set_font("Times_uniB",size=11)
             pdf.set_xy(43.7,203)
-            pdf.cell(w=19.3,h=9.7,align="C",markdown=True,txt=str(self.data.total_gram.get()))
+            pdf.cell(w=19.3,h=9.7,align="C",txt=str(self.data.total_gram.get()))
             pdf.cell(w=19.6,h=9.7,align="C",txt=str(self.data.total_mgram.get()).zfill(3))
             pdf.set_xy(104.7,203)
             pdf.cell(w=40,h=9.7,align="C",txt=formatter(self.data.pretotal.get()))
