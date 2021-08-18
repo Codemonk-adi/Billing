@@ -772,6 +772,7 @@ class Billing(object):
     
 
 root = Tk()
+root.iconbitmap(default='Bill_aj_g.ico')
 width = root.winfo_screenwidth()
 height = int(root.winfo_screenheight()*0.9)
 root.geometry("%dx%d+0+0" % (width, height))
