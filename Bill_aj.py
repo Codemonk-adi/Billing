@@ -92,7 +92,7 @@ class data_aj():
         self.gram_list = [IntVar() for i in range(5)]
         self.mgram_list = [IntVar() for i in range(5)]
         self.rate_list = [IntVar() for i in range(5)]
-        self.labour_list = [IntVar() for i in range(5)]
+        self.labour_list = [StringVar() for i in range(5)]
         self.total_list = [DoubleVar() for i in range(5)]
         self.total = StringVar()
         self.curr_date.set(date.today().strftime('%d/%m/%y'))
@@ -277,11 +277,15 @@ class Page_aj(Page):
         total = 0
         #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
         for i in range(5):
-            if(self.data.labour_list[i].get() != 0):
-                self.data.total_list[i].set((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get()+self.data.labour_list[i].get())*1.03)
+            if(self.data.rate_list[i].get()!= 0):
+                labour = self.data.labour_list[i].get()
+                if(labour[-1]=='%'):
+                    labour = int(labour[:-1])/100*self.data.rate_list[i].get()
+                else:
+                    labour = int(labour)
+                self.data.total_list[i].set(round((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get()+labour)*1.03,2))
                 total+=self.data.total_list[i].get()
         self.data.total.set(round(total))
-        self.data.istotaled = True
         return
     
     def clear(self):
@@ -298,12 +302,10 @@ class Page_aj(Page):
             self.data.rate_list[i].set(0)
             self.data.labour_list[i].set(0)
             self.data.total_list[i].set(0.0)
-        self.data.istotaled= False
         self.data.isgenerated = False
         return
     def billing_section(self):
-        if(self.data.istotaled == False):
-            self.total_section()
+        self.total_section()
         pdf=FPDF(orientation='P', unit='mm', format='A4')
         pdf.add_font('Times_uni',fname="Quivira.otf",uni=True)
         pdf.add_font('Times_uniB',fname="arialB.ttf",uni=True)
@@ -327,12 +329,12 @@ class Page_aj(Page):
         
         #Details
         for i in range(5):
-            if(self.data.labour_list[i].get() != 0):
+            if(self.data.rate_list[i].get() != 0):
                 pdf.set_xy(13,22.1*i+99.8)
                 pdf.multi_cell(w=51.8,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
                 pdf.set_xy(65,22.1*i+99.8)
                 pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
-                pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()))
+                pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
                 pdf.cell(w=23.4,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
                 pdf.cell(w=27.7,h=22.1,align="C",txt=str(self.data.labour_list[i].get()))
                 pdf.cell(w=24.6,h=22.1,align="C",txt="3%")
@@ -592,7 +594,7 @@ class page_rest(Page):
         pdf.cell(w=56.4,h=3.5,align='L',txt=self.data.cust_name.get().title())
         #Address
         pdf.set_xy(27.2,68.6)
-        pdf.multi_cell(w=58.9,h=7,align='L',txt=self.data.cust_add.get().title())
+        pdf.multi_cell(w=58.9,h=3.5,align='L',txt=self.data.cust_add.get().title())
         #Gst Number
         pdf.set_xy(141.2,68.6)
         pdf.cell(w=39.1,h=3.5,align='L',txt=self.data.gst_num.get().upper())
