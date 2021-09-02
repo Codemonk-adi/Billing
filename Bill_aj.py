@@ -278,13 +278,18 @@ class Page_aj(Page):
         #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
         for i in range(5):
             if(self.data.rate_list[i].get()!= 0):
+                
                 labour = self.data.labour_list[i].get()
                 if(labour[-1]=='%'):
                     labour = int(labour[:-1])/100*self.data.rate_list[i].get()
                 else:
                     labour = int(labour)
-                self.data.total_list[i].set(round((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get()+labour)*1.03,2))
-                total+=self.data.total_list[i].get()
+                if(self.data.gram_list[i].get()==0):
+                    self.data.total_list[i].set(round((((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*self.data.rate_list[i].get())+labour)*1.03,2))
+                    total+=self.data.total_list[i].get()
+                else:
+                    self.data.total_list[i].set(round((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get()+labour)*1.03,2))
+                    total+=self.data.total_list[i].get()
         self.data.total.set(round(total))
         return
     
