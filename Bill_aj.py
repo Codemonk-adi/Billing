@@ -348,7 +348,7 @@ class Page_aj(Page):
         #Payment Method
         pdf.set_xy(15.7,239.5)
         pdf.set_font(family="Times_uni",size=12)
-        pdf.cell(w=29.2,h=7.9,txt=self.data.payment_method.get())
+        pdf.cell(w=29.2,h=7.9,txt=self.data.payment_method.get().capitalize())
         
         #Total
         pdf.set_xy(169.2,233.4)
@@ -371,7 +371,7 @@ class Page_aj(Page):
         else:
             dirname = os.path.dirname(__file__)
         
-        pdfname = str(date.today())+str(self.data.inv_num.get())+str(self.data.cust_name.get())+".pdf"
+        pdfname = str(date.today())+str(self.data.cust_name.get())+str(self.data.inv_num.get())+".pdf"
         # pdfname = str(self.data.inv_num.get())+str(self.data.cust_name.get())+".pdf"
         self.data.filename = os.path.join(dirname, 'Bill_store/Akash/'+pdfname)
         output_pdf.write(open(self.data.filename,'wb'))
@@ -619,16 +619,16 @@ class page_rest(Page):
             #Details
             for i in range(5):
                 if(self.data.rate_list[i].get() != 0):
-                    pdf.set_xy(2.8,22.1*i+88.1)
-                    pdf.multi_cell(w=40.9,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
-                    pdf.set_xy(43.7,22.1*i+88.1)
-                    pdf.cell(w=19.3,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
-                    pdf.cell(w=19.6,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
-                    pdf.cell(w=22.1,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
-                    pdf.cell(w=25.1,h=22.1,align="C",txt=str(self.data.total_pretax_list[i].get()))
-                    pdf.cell(w=19.1,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
-                    pdf.cell(w=18.3,h=22.1,align="C",txt=str(self.data.tax_list[i].get()))
-                    pdf.cell(w=40.1,h=22.1,align="C",txt=str(self.data.total_posttax_list[i].get()))
+                    pdf.set_xy(2.8,19.76*i+88.1)
+                    pdf.multi_cell(w=40.9,h=19.76,align="C",txt=self.data.desc_list[i].get().title())
+                    pdf.set_xy(43.7,19.76*i+88.1)
+                    pdf.cell(w=19.3,h=19.76  ,align="C",txt=str(self.data.gram_list[i].get()))
+                    pdf.cell(w=19.6,h=19.76  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
+                    pdf.cell(w=22.1,h=19.76,align="C",txt=str(self.data.rate_list[i].get()))
+                    pdf.cell(w=25.1,h=19.76,align="C",txt=str(self.data.total_pretax_list[i].get()))
+                    pdf.cell(w=19.1,h=19.76,align="C",txt=str(self.data.tax_list[i].get()))
+                    pdf.cell(w=18.3,h=19.76,align="C",txt=str(self.data.tax_list[i].get()))
+                    pdf.cell(w=40.1,h=19.76,align="C",txt=str(self.data.total_posttax_list[i].get()))
 
             #summary
             pdf.set_font("Times_uniB",size=11)
@@ -647,15 +647,15 @@ class page_rest(Page):
             #Details
             for i in range(5):
                 if(self.data.rate_list[i].get() != 0):
-                    pdf.set_xy(2.8,22.1*i+88.1)
-                    pdf.multi_cell(w=40.9,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
-                    pdf.set_xy(43.7,22.1*i+88.1)
-                    pdf.cell(w=19.3,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
-                    pdf.cell(w=19.6,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
-                    pdf.cell(w=22.1,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
-                    pdf.cell(w=40,h=22.1,align="C",txt=str(self.data.total_pretax_list[i].get()))
-                    pdf.cell(w=22.5,h=22.1,align="C",txt=str(self.data.tax_list[i].get()*2))
-                    pdf.cell(w=40.1,h=22.1,align="C",txt=str(self.data.total_posttax_list[i].get()))
+                    pdf.set_xy(2.8,19.76*i+88.1)
+                    pdf.multi_cell(w=40.9,h=19.76,align="C",txt=self.data.desc_list[i].get().title())
+                    pdf.set_xy(43.7,19.76*i+88.1)
+                    pdf.cell(w=19.3,h=19.76  ,align="C",txt=str(self.data.gram_list[i].get()))
+                    pdf.cell(w=19.6,h=19.76  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
+                    pdf.cell(w=22.1,h=19.76,align="C",txt=str(self.data.rate_list[i].get()))
+                    pdf.cell(w=40,h=19.76,align="C",txt=str(self.data.total_pretax_list[i].get()))
+                    pdf.cell(w=22.5,h=19.76,align="C",txt=str(self.data.tax_list[i].get()*2))
+                    pdf.cell(w=40.1,h=19.76,align="C",txt=str(self.data.total_posttax_list[i].get()))
 
             #summary
             pdf.set_font("Times_uniB",size=11)
@@ -669,9 +669,9 @@ class page_rest(Page):
         pdf.output("temp.pdf")
         pdf.close()
         if(state):
-            pdf_template = PdfFileReader(open("Wholesale_template_v3.pdf","rb"))
+            pdf_template = PdfFileReader(open("Wholesale_template_v4.pdf","rb"))
         else:
-            pdf_template = PdfFileReader(open("wholesale_template_igst.pdf","rb"))
+            pdf_template = PdfFileReader(open("wholesale_template_igst_v2.pdf","rb"))
         template_page = pdf_template.getPage(0)
         overlay_pdf=    PdfFileReader(open("temp.pdf",'rb'))
         template_page.mergePage(overlay_pdf.getPage(0))
@@ -684,7 +684,7 @@ class page_rest(Page):
         else:
             dirname = os.path.dirname(__file__)
         
-        pdfname = str(date.today())+str(self.data.inv_num.get())+str(self.data.cust_name.get())+".pdf"
+        pdfname = str(date.today())+str(self.data.cust_name.get())+str(self.data.inv_num.get())+".pdf"
         # pdfname = str(self.data.inv_num.get())+str(self.data.cust_name.get())+".pdf"
         self.data.filename = os.path.join(dirname, 'Bill_store/'+details.nam[self.firm]+'/'+pdfname)
         output_pdf.write(open(self.data.filename,'wb'))
