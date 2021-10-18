@@ -1,41 +1,30 @@
-from tkinter import*
+
+from tkinter import Label,LabelFrame,Button,Frame
+from tkinter import RAISED
+from helpers import *
 from PyPDF2 import PdfFileReader,PdfFileWriter
 from fpdf import FPDF
 import details
 from data import *
 import os
 import sys
-from database import database
+from database import Database
 class Page(Frame):
     def __init__(self):
         Frame.__init__(self)
     def show(self):
         self.lift()
 
-
-def formatter(num):
-    format_total=""
-    total_copy = int(float(num))
-    if(total_copy<1000):
-        format_total=str(total_copy)
-    else:
-        format_total="{:0>3d}".format(total_copy%1000)
-        total_copy=int(total_copy/1000)
-        format_total=","+format_total
-        while(total_copy>99):
-            format_total=","+"{:0>2d}".format(total_copy%100) + format_total
-            total_copy=int(total_copy/100)
-        if(total_copy!=0):
-            format_total=str(total_copy)+format_total
-        format_total="₹"+format_total
-    return format_total
-
 class Page_aj(Page):
+    #pylint: disable=line-too-long
     def __init__(self):
-        Page.__init__(self)
+        Page.__init__(self) 
         self.data = data_aj()
-        F1 = LabelFrame(self,text="Customer Information", font=("Calibri", 12, "bold"), fg="#264653", bg=self.data.bg_color,
-        relief=RAISED)
+        #264653
+        self.db = Database()
+        self.db.create_tables()
+        F1 = LabelFrame(self,text="Customer Information",relief=RAISED,bg=self.data.bg_color, fg='#264653', font=("Calibri",18,"bold"))
+        
         F1.place(x=0,y=0,relwidth=1,relheight=0.2)
 
         F2 = LabelFrame(self,text='Details',relief=RAISED,bg=self.data.bg_color, fg='#264653', font=("Calibri",18,"bold"))
@@ -52,17 +41,17 @@ class Page_aj(Page):
         font=("Calibri", 15, "bold")).grid(row=0, column=0, padx=10, pady=2)
         customername_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_name)
         customername_en.grid(row=0, column=1, ipady=4, ipadx=30, pady=2)
-        
         # This function for customer contact number
         customercontact_lbl = Label(F1, text="Phone No", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=2, padx=20)
         customercontact_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_num)
         customercontact_en.grid(row=0, column=3, ipady=4, ipadx=30, pady=2)
+        AC = AutocompleteEntry(customercontact_en,self.set_retail_data)
+        AC.set_completion_list(self.db.get_contact_id_list)
         # This fucntion for Invoice Number
         customerinvoice_lbl = Label(F1, text="Invoice No.", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(row=0, column=4, padx=20)
-        customerinvoice_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.inv_num)
+        customerinvoice_en = Entry(F1,textvariable=self.data.inv_num,bd=8, relief=RAISED)
         customerinvoice_en.grid(row=0, column=5, ipadx=30, ipady=4, pady=2)
-
         # #button
         # invoice_btn = Button(F1, text="Enter", bd=7, relief=RAISED, font=("Calibri", 12, "bold"), bg=self.data.bg_color,
         # fg=self.data.fg_color)
@@ -72,9 +61,7 @@ class Page_aj(Page):
         customeraddress_lbl = Label(F1, text="Address", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=1, column=0, padx=20)
         customeraddress_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_add, width=50)
-        customeraddress_en.grid(row=1, column=1, columnspan=2, ipady=4, ipadx=30, pady=2)
-        
-
+        customeraddress_en.grid(row=1, column=1, columnspan=2, ipady=4, ipadx=30, pady=2)       
         #date
         date_lbl = Label(F1,text="Date", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=1, column=3, padx=20)
@@ -195,7 +182,15 @@ class Page_aj(Page):
 
         for w in widgets:
             w.lift()
+    def close(self):
+        self.db.close()
+    def set_retail_data(self,id):
+        list_data = self.db.get_custdetails(id)
+        self.data.cust_name.set(list_data[0][0])
+        self.data.cust_num.set(list_data[0][1])
+        self.data.cust_add.set(list_data[0][2])
     def total_section(self):
+        
         total = 0
         #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
         for i in range(5):
@@ -233,6 +228,12 @@ class Page_aj(Page):
         return
     def billing_section(self):
         self.total_section()
+        cust_id = self.db.insert_retail_user({
+        'name':self.data.cust_name.get(),
+        'contact': self.data.cust_num.get(),
+        'address':self.data.cust_add.get()
+        })
+        
         pdf=FPDF(orientation='P', unit='mm', format='A4')
         pdf.add_font('Times_uni',fname="Quivira.otf",uni=True)
         pdf.add_font('Times_uniB',fname="arialB.ttf",uni=True)
@@ -253,20 +254,33 @@ class Page_aj(Page):
         #Contact Number
         pdf.set_xy(166.7,69.6)
         pdf.cell(w=39.1,h=8.1,txt=self.data.cust_num.get())
-        
+        # self.db.create_retail_bill({
+        # 'name':self.data.cust_name.get(),
+        # 'contact': self.data.cust_num.get(),
+        # 'address':self.data.cust_add.get()
+        # })
+        bill_id = self.db.insert_retail_bill({
+        'invoice': self.data.inv_num.get(),
+        'date': self.data.curr_date.get(),
+        'cust_id':cust_id,
+        'total': self.data.total.get()
+        })
+        particulars = []
         #Details
         for i in range(5):
             if(self.data.rate_list[i].get() != 0):
+                entry = [i,bill_id,self.data.desc_list[i].get().title(),self.data.gram_list[i].get(),self.data.mgram_list[i].get(),self.data.rate_list[i].get(),self.data.labour_list[i].get(),self.data.total_list[i].get()]
                 pdf.set_xy(13,22.1*i+99.8)
-                pdf.multi_cell(w=51.8,h=22.1,align="C",txt=self.data.desc_list[i].get().title())
+                pdf.multi_cell(w=51.8,h=22.1,align="C",txt=(entry[2]))
                 pdf.set_xy(65,22.1*i+99.8)
-                pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.data.gram_list[i].get()))
-                pdf.cell(w=14,h=22.1  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
-                pdf.cell(w=23.4,h=22.1,align="C",txt=str(self.data.rate_list[i].get()))
-                pdf.cell(w=27.7,h=22.1,align="C",txt=str(self.data.labour_list[i].get()))
+                pdf.cell(w=14,h=22.1  ,align="C",txt=str(entry[3]))
+                pdf.cell(w=14,h=22.1  ,align="C",txt=str(entry[4]).zfill(3))
+                pdf.cell(w=23.4,h=22.1,align="C",txt=str(entry[5]))
+                pdf.cell(w=27.7,h=22.1,align="C",txt=str(entry[6]))
                 pdf.cell(w=24.6,h=22.1,align="C",txt="3%")
-                pdf.cell(w=33.8,h=22.1,align="C",txt=str(self.data.total_list[i].get()))
-        
+                pdf.cell(w=33.8,h=22.1,align="C",txt=str(entry[7]))
+                particulars.append(entry)
+        self.db.insert_retail_bill_particulars(bill_id,particulars)
         #Payment Method
         pdf.set_xy(15.7,239.5)
         pdf.set_font(family="Times_uni",size=12)
@@ -313,6 +327,7 @@ class Page_aj(Page):
 class page_rest(Page):
     def __init__(self,firm):
         Page.__init__(self)
+        self.db = Database()
         self.firm = firm
         self.data = data_rest()
         F1 = LabelFrame(self,text="Customer Information", font=("Calibri", 12, "bold"), fg="#264653", bg=self.data.bg_color,
@@ -333,7 +348,9 @@ class page_rest(Page):
         font=("Calibri", 15, "bold")).grid(row=0, column=0, padx=10, pady=2)
         customername_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_name)
         customername_en.grid(row=0, column=1, ipady=4, ipadx=30, pady=2)
-        
+        AC = AutocompleteEntry(customername_en,self.set_whole_data)
+        AC.set_completion_list(self.db.get_whole_name_id_list)
+
         # This function for GST number
         customergst_lbl = Label(F1, text="GST Number", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=2, padx=20)
@@ -476,7 +493,13 @@ class page_rest(Page):
 
         for w in widgets:
             w.lift()
-
+    def close(self):
+        self.db.close()
+    def set_whole_data(self,id):
+        list_data = self.db.get_whole_custdetails(id)
+        self.data.cust_name.set(list_data[0][0])
+        self.data.gst_num.set(list_data[0][1])
+        self.data.cust_add.set(list_data[0][2])
     def total_section(self):
         total = 0
         total_mg = 0
@@ -505,7 +528,12 @@ class page_rest(Page):
             state=True
         else:
             state=False
-    
+        cust_id = self.db.insert_whole_user({
+        'name':self.data.cust_name.get(),
+        'gst_no': self.data.gst_num.get(),
+        'address':self.data.cust_add.get()
+        })
+        
         pdf.add_font('Times_uniB',fname="arialB.ttf",uni=True)
         pdf.add_font('Times_uni',fname="Quivira.otf",uni=True)
         pdf.add_page()
@@ -525,7 +553,14 @@ class page_rest(Page):
         #Gst Number
         pdf.set_xy(141.2,68.6)
         pdf.cell(w=39.1,h=3.5,align='L',txt=self.data.gst_num.get().upper())
-        # 
+        
+        bill_id = self.db.insert_whole_bill({
+        'invoice': self.data.inv_num.get(),
+        'firm':self.firm,
+        'date': self.data.curr_date.get(),
+        'cust_id':cust_id,
+        'total': self.data.posttotal.get()
+        })
         #Account info
         pdf.set_font("Times_uni",size=11)
         pdf.set_xy(25,235.9)
@@ -536,11 +571,12 @@ class page_rest(Page):
         #sign
         pdf.set_xy(154.2,257.8)
         pdf.cell(w=30,h=3.5,align='L',txt=details.name[self.firm])
-        
+        particulars=[]
         if(state):
             #Details
             for i in range(5):
                 if(self.data.rate_list[i].get() != 0):
+                    entry = [i,bill_id,self.data.desc_list[i].get().title(),self.data.gram_list[i].get(),self.data.mgram_list[i].get(),self.data.rate_list[i].get()]
                     pdf.set_xy(2.8,19.76*i+88.1)
                     pdf.multi_cell(w=40.9,h=19.76,align="C",txt=self.data.desc_list[i].get().title())
                     pdf.set_xy(43.7,19.76*i+88.1)
@@ -551,7 +587,7 @@ class page_rest(Page):
                     pdf.cell(w=19.1,h=19.76,align="C",txt=str(self.data.tax_list[i].get()))
                     pdf.cell(w=18.3,h=19.76,align="C",txt=str(self.data.tax_list[i].get()))
                     pdf.cell(w=40.1,h=19.76,align="C",txt=str(self.data.total_posttax_list[i].get()))
-
+                    particulars.append(entry)
             #summary
             pdf.set_font("Times_uniB",size=11)
             pdf.set_xy(43.7,203)
@@ -569,6 +605,7 @@ class page_rest(Page):
             #Details
             for i in range(5):
                 if(self.data.rate_list[i].get() != 0):
+                    entry = [i,bill_id,self.data.desc_list[i].get().title(),self.data.gram_list[i].get(),self.data.mgram_list[i].get(),self.data.rate_list[i].get()]
                     pdf.set_xy(2.8,19.76*i+88.1)
                     pdf.multi_cell(w=40.9,h=19.76,align="C",txt=self.data.desc_list[i].get().title())
                     pdf.set_xy(43.7,19.76*i+88.1)
@@ -578,7 +615,7 @@ class page_rest(Page):
                     pdf.cell(w=40,h=19.76,align="C",txt=str(self.data.total_pretax_list[i].get()))
                     pdf.cell(w=22.5,h=19.76,align="C",txt=str(self.data.tax_list[i].get()*2))
                     pdf.cell(w=40.1,h=19.76,align="C",txt=str(self.data.total_posttax_list[i].get()))
-
+                    particulars.append(entry)
             #summary
             pdf.set_font("Times_uniB",size=11)
             pdf.set_xy(43.7,203)
@@ -590,6 +627,8 @@ class page_rest(Page):
             pdf.cell(w=40.1,h=9.7,align="C",txt=formatter(self.data.posttotal.get()))                    
         pdf.output("temp.pdf")
         pdf.close()
+        self.db.insert_whole_bill_particulars(bill_id,particulars)
+        
         if(state):
             pdf_template = PdfFileReader(open("Wholesale_template_v4.pdf","rb"))
         else:
