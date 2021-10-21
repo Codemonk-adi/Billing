@@ -4,6 +4,7 @@
 from tkinter import Tk,messagebox,StringVar,Label,LabelFrame,Button,Frame
 from tkinter import RAISED,X
 from pages import page_rest,Page_aj
+from admin_page import page_admin
 # -*- coding: utf-8 -*-
 
 class Billing(object):
@@ -30,10 +31,13 @@ class Billing(object):
         command=self.load_sj)
         gurj_btn = Button(F0, text="Gurukrupa", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
         command=self.load_gj)
+        admin_btn = Button(F0, text="Admin", bg=self.bg_color, fg=self.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED,
+        command=self.load_admin)
         aj_btn.grid(row=0,column=0,padx=10, pady=5)
         abhj_btn.grid(row=0,column=1,padx=10, pady=5)
         shrj_btn.grid(row=0,column=2,padx=10, pady=5)
         gurj_btn.grid(row=0,column=3,padx=10, pady=5)
+        admin_btn.grid(row=0,column=4,padx=10, pady=5)
         F1 = Frame(self.root)
         F1.pack(fill='both',expand=True)
         #Akash Jewellers
@@ -45,6 +49,8 @@ class Billing(object):
         self.FSHR.place(in_=F1,x=0,y=0,relwidth=1,relheight=1)
         self.FGUR = page_rest(2)
         self.FGUR.place(in_=F1,x=0,y=0,relwidth=1,relheight=1)
+        self.FADMIN = page_admin()
+        self.FADMIN.place(in_=F1,x=0,y=0,relwidth=1,relheight=1)
         self.FAJ.show()
     def load_aj(self):
         self.title.set("Akash Jewellers")
@@ -60,6 +66,9 @@ class Billing(object):
     def load_gj(self):
         self.title.set("Gurukrupa Jewellers")
         self.FGUR.show()
+    def load_admin(self):
+        self.title.set("Admin")
+        self.FADMIN.show()
     def close_con(self):
         self.FAJ.close()
         self.FABH.close()

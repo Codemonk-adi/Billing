@@ -79,6 +79,18 @@ class Database():
             ON DELETE CASCADE,
             PRIMARY KEY (ID,BILL)
             );
+        CREATE TABLE IF NOT EXISTS Categories (
+            ID INTEGER PRIMARY KEY ,
+            _Name varchar(255)
+            );
+            
+		CREATE TABLE IF NOT EXISTS Alias(
+			ID integer primary key,
+            _Name varchar(255),
+            category integer,
+            foreign key (category) references Categories(ID)
+            On delete cascade
+        );
         ''')
         self.conn.commit()
     def insert_retail_user(self,data_list):
@@ -163,7 +175,7 @@ class Database():
             in that order'''
         if self.cur.execute(f'''
                         select exists (select * from whole_bill where id={bill_id});
-                        ''').fetchone():
+                        ''').fetchone()[0]:
             self.cur.execute(f'''
                             delete from whole_particulars where BILL={bill_id};
                             ''')
@@ -178,4 +190,49 @@ class Database():
     def get_whole_custdetails(self,cust_id):
         """Returns Name, GST_no, Address given ID"""
         self.cur.execute(f'Select NAME,GST_NO,ADDRESS from whole_cust WHERE ID = {cust_id} LIMIT 1')
+        return self.cur.fetchall()
+    def insert_categories(self,category:str):
+        """Inserts a category and returns its ID."""
+        temp = self.cur.execute(f'''
+                        select exists (select * from categories where _Name="{category.title()}");
+                        ''').fetchone()[0]
+        if not temp:
+            self.cur.execute(f'insert into categories(_Name) values ("{category.title()}") returning ID')
+        var = self.cur.fetchone()
+        self.conn.commit()
+        if var:
+            return var[0]
+        else:
+            return None
+    def insert_alias(self,category_id:int,alias: str):
+        """Inserts Alias for given Category ID"""
+        if not self.cur.execute(f'''
+                        select exists (select * from alias where _Name="{alias.title()}");
+                        ''').fetchone()[0]:
+            self.cur.execute(f'insert into alias(_Name,category) values ("{alias.title()}",{category_id})')
+        self.conn.commit()
+    def get_category_lists(self):
+        """Returns Pairs of Category/Alias Name, Parent ID."""
+        self.cur.execute('''
+                        Select _Name,ID from categories
+                        UNION
+                        Select _Name,category from alias
+                        ''')
+        return self.cur.fetchall()
+    def get_category_lists_s(self):
+        self.cur.execute('''
+                        Select _Name,ID from categories
+                        ''')
+        return self.cur.fetchall()
+    def get_category_name(self,category:int):
+        """Returns the name of the category given its id."""
+        self.cur.execute(f'''
+                        select _Name from categories where ID={category} 
+                        ''')
+        return self.cur.fetchone()[0]
+    def get_aliases(self,category:int):
+        """Returns all the aliases of the given id."""
+        self.cur.execute(f'''
+                        Select _Name from alias where category={category}
+                        ''')
         return self.cur.fetchall()

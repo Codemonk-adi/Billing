@@ -14,9 +14,8 @@ class data_rest():
         self.inv_num = IntVar()
         self.item_details = []
         self.desc_list = [StringVar() for i in range(5)]
-        self.gram_list = [IntVar() for i in range(5)]
-        self.mgram_list = [IntVar() for i in range(5)]
-        self.rate_list = [IntVar() for i in range(5)]
+        self.weight_list = [StringVar() for i in range(5)]
+        self.rate_list = [StringVar() for i in range(5)]
         self.total_gram = IntVar()
         self.total_mgram = IntVar()
         self.total_tax = DoubleVar()
@@ -45,9 +44,8 @@ class data_aj():
         self.inv_num = IntVar()
         self.item_details = []
         self.desc_list = [StringVar() for i in range(5)]
-        self.gram_list = [IntVar() for i in range(5)]
-        self.mgram_list = [IntVar() for i in range(5)]
-        self.rate_list = [IntVar() for i in range(5)]
+        self.weight_list = [StringVar() for i in range(5)]
+        self.rate_list = [StringVar() for i in range(5)]
         self.labour_list = [StringVar() for i in range(5)]
         self.total_list = [DoubleVar() for i in range(5)]
         self.total = StringVar()

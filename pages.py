@@ -1,10 +1,13 @@
 
+"""Pages for the GUI."""
 from tkinter import Label,LabelFrame,Button,Frame
 from tkinter import RAISED
 from helpers import *
+from math import floor, modf
 from PyPDF2 import PdfFileReader,PdfFileWriter
 from fpdf import FPDF
 import details
+import url_sender
 from data import *
 import os
 import sys
@@ -23,7 +26,7 @@ class Page_aj(Page):
         #264653
         self.db = Database()
         self.db.create_tables()
-        F1 = LabelFrame(self,text="Customer Information",relief=RAISED,bg=self.data.bg_color, fg='#264653', font=("Calibri",18,"bold"))
+        F1 = LabelFrame(self,text="Customer Information",relief=RAISED,bg=self.data.bg_color, fg='#264653', font=("Calibri",12,"bold"))
         
         F1.place(x=0,y=0,relwidth=1,relheight=0.2)
 
@@ -36,18 +39,18 @@ class Page_aj(Page):
         F4 = LabelFrame(self,text="Result",relief=RAISED,bg=self.data.bg_color, fg='#264653', font=("Calibri",18,"bold"))
         F4.place(rely=0.8,relwidth=1,relheight=0.2)
         
-        #for name
-        customername_lbl = Label(F1, text="Customer Name", bg=self.data.bg_color, fg=self.data.fg_color,
-        font=("Calibri", 15, "bold")).grid(row=0, column=0, padx=10, pady=2)
-        customername_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_name)
-        customername_en.grid(row=0, column=1, ipady=4, ipadx=30, pady=2)
         # This function for customer contact number
         customercontact_lbl = Label(F1, text="Phone No", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
-        row=0, column=2, padx=20)
+        row=0, column=0, padx=20)
         customercontact_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_num)
-        customercontact_en.grid(row=0, column=3, ipady=4, ipadx=30, pady=2)
+        customercontact_en.grid(row=0, column=1, ipady=4, ipadx=30, pady=2)
         AC = AutocompleteEntry(customercontact_en,self.set_retail_data)
         AC.set_completion_list(self.db.get_contact_id_list)
+        #for name
+        customername_lbl = Label(F1, text="Customer Name", bg=self.data.bg_color, fg=self.data.fg_color,
+        font=("Calibri", 15, "bold")).grid(row=0, column=2, padx=10, pady=2)
+        customername_en = Entry(F1, bd=8, relief=RAISED, textvariable=self.data.cust_name)
+        customername_en.grid(row=0, column=3, ipady=4, ipadx=30, pady=2)
         # This fucntion for Invoice Number
         customerinvoice_lbl = Label(F1, text="Invoice No.", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(row=0, column=4, padx=20)
         customerinvoice_en = Entry(F1,textvariable=self.data.inv_num,bd=8, relief=RAISED)
@@ -70,74 +73,36 @@ class Page_aj(Page):
 
         # root.columnconfigure(0,1)
         
-        
         desc_lbl = Label(F2,text="Particulars", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=0, padx=20)
-        description_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[0])
-        description_0.grid(row=1,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_1 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[1])
-        description_1.grid(row=2,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_2 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[2])
-        description_2.grid(row=3,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_3 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[3])
-        description_3.grid(row=4,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_4 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[4])
-        description_4.grid(row=5,column=0,padx=5, pady=3, ipady=5, ipadx=5)
+        descriptions = []
+        for i in range(5):
+            descriptions.append(Entry(F2,relief=RAISED,bg="pink" if i%2==0 else "white",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[i]))
+            descriptions[i].grid(row=i+1,column=0,padx=5, pady=3, ipady=5, ipadx=5)
+            AutocompleteCombobox(descriptions[i],self.setter_fn(descriptions[i])).set_completion_list(self.db.get_category_lists)
 
-        W_gram_lbl = Label(F2, text="Gram",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
+        weight_lbl = Label(F2, text="Weights",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=1, padx=20)
-        gram_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[0])
-        gram_0.grid(row=1,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_1 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[1])
-        gram_1.grid(row=2,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_2 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[2])
-        gram_2.grid(row=3,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_3 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[3])
-        gram_3.grid(row=4,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_4 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[4])
-        gram_4.grid(row=5,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-
-        W_milli_gram_lbl = Label(F2, text="Milli Gram",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
-        row=0, column=2, padx=20)
-        mgram_0 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[0],bg="pink",font=('Calibri', 18, "bold"))
-        mgram_0.grid(row=1,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_1 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[1],font=('Calibri', 18, "bold"))
-        mgram_1.grid(row=2,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_2 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[2],bg="pink",font=('Calibri', 18, "bold"))
-        mgram_2.grid(row=3,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_3 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[3],font=('Calibri', 18, "bold"))
-        mgram_3.grid(row=4,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_4 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[4],bg="pink",font=('Calibri', 18, "bold"))
-        mgram_4.grid(row=5,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-
-        rate_lbl = Label(F2, text="Rate(per gram)",bg=self.data.bg_color, fg=self.data.fg_color,font=("Calibri", 15, "bold")).grid(row=0, column=3, padx=20)
-        rate_0 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[0],bg="pink",font=('Calibri', 18, "bold"))
-        rate_0.grid(row=1,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_1 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[1],font=('Calibri', 18, "bold"))
-        rate_1.grid(row=2,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_2 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[2],bg="pink",font=('Calibri', 18, "bold"))
-        rate_2.grid(row=3,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_3 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[3],font=('Calibri', 18, "bold"))
-        rate_3.grid(row=4,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_4 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[4],bg="pink",font=('Calibri', 18, "bold"))
-        rate_4.grid(row=5,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-
+        weights = []
+        for i in range(5):    
+            weights.append(Entry(F2,relief=RAISED,bg="pink" if i%2==0 else "white",font=('Calibri', 18, "bold"),textvariable=self.data.weight_list[i]))
+            weights[i].grid(row=i+1,column=1,padx=2, pady=3, ipady=5, ipadx=2)
+        
+        rate_lbl = Label(F2, text="Rate(per gram)",bg=self.data.bg_color, fg=self.data.fg_color,font=("Calibri", 15, "bold")).grid(row=0, column=2, padx=20)
+        rates = []
+        for i in range(5):    
+            rates.append(Entry(F2,relief=RAISED,bg="pink" if i%2==0 else "white",font=('Calibri', 18, "bold"),textvariable=self.data.rate_list[i]))
+            rates[i].grid(row=i+1,column=2,padx=2, pady=3, ipady=5, ipadx=2)
         
         # Fr.columnconfigure(0,weight=1)
         
         
         labour_charge_lbl = Label(F2, text="Labour",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
-        row=0, column=4, padx=20)
-        labour_charge_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.labour_list[0])
-        labour_charge_0.grid(row=1,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        labour_charge_1 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[1],font=('Calibri', 18, "bold"))
-        labour_charge_1.grid(row=2,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        labour_charge_2 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[2],bg="pink",font=('Calibri', 18, "bold"))
-        labour_charge_2.grid(row=3,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        labour_charge_3 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[3],font=('Calibri', 18, "bold"))
-        labour_charge_3.grid(row=4,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        labour_charge_4 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[4],bg="pink",font=('Calibri', 18, "bold"))
-        labour_charge_4.grid(row=5,column=4,padx=2, pady=3, ipady=5, ipadx=2)
+        row=0, column=3, padx=20)
+        labours = []
+        for i in range(5):    
+            labours.append(Entry(F2,relief=RAISED,bg="pink" if i%2==0 else "white",font=('Calibri', 18, "bold"),textvariable=self.data.labour_list[i]))
+            labours[i].grid(row=i+1,column=3,padx=2, pady=3, ipady=5, ipadx=2)
         
         # Fl.columnconfigure(0,weight=1)
 
@@ -163,11 +128,15 @@ class Page_aj(Page):
         clear_button = Button(F4, text="Clear", bg=self.data.bg_color, fg=self.data.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.clear)
         clear_button.grid(row=1, column=6, ipadx=20, padx=30)
         
-        # # This function for Exit Button
-        # exit_buttonn = Button(F4, text="Exit", bg=self.data.bg_color, fg=self.data.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.exit)
-        # exit_buttonn.grid(row=1, column=7, ipadx=20)
+        
+        # This function for SMS Button
+        SMS_buttonn = Button(F4, text="Send Thanks", bg=self.data.bg_color, fg=self.data.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.thanks)
+        SMS_buttonn.grid(row=1, column=7, ipadx=20)
+        
+        #This is for printing
         print_button = Button(F4, text="Print", bg=self.data.bg_color, fg=self.data.fg_color, font=("lucida", 12, "bold"), bd=7, relief=RAISED, command=self.print_bill)
-        print_button.grid(row=1,column=7, ipadx= 20)
+        print_button.grid(row=1,column=8, ipadx= 20,padx=30)
+        
         F4.rowconfigure(1,weight=1)
         F4.rowconfigure(0,weight=1)
 
@@ -177,13 +146,25 @@ class Page_aj(Page):
         F2.columnconfigure(3,weight=1)
         F2.columnconfigure(4,weight=1)
         
-        customername_en.focus()
-        widgets=[customername_en,customercontact_en, customerinvoice_en, customeraddress_en,date_en, description_0, gram_0, mgram_0, rate_0, labour_charge_0,description_1, gram_1, mgram_1, rate_1, labour_charge_1,description_2, gram_2, mgram_2, rate_2, labour_charge_2,description_3, gram_3, mgram_3, rate_3, labour_charge_3,description_4, gram_4, mgram_4, rate_4, labour_charge_4]
-
+        customercontact_en.focus()
+        widgets=[customercontact_en,customername_en, customerinvoice_en, customeraddress_en,date_en]
+        # , description_0, gram_0, rate_0, labour_charge_0,description_1, gram_1, rate_1, labour_charge_1,description_2, gram_2, rate_2, labour_charge_2,description_3, gram_3, rate_3, labour_charge_3,description_4, gram_4, rate_4, labour_charge_4]
         for w in widgets:
             w.lift()
+        for i in range(5):
+            descriptions[i].lift()
+            weights[i].lift()
+            rates[i].lift()
+            labours[i].lift()
     def close(self):
         self.db.close()
+    def thanks(self):
+        url_sender.send_thanks(self.data.cust_num.get())
+    def setter_fn(self,entry:Entry):
+        def fn(_id):
+            entry.delete(0,END)
+            entry.insert(0,self.db.get_category_name(_id))
+        return fn
     def set_retail_data(self,id):
         list_data = self.db.get_custdetails(id)
         self.data.cust_name.set(list_data[0][0])
@@ -194,18 +175,18 @@ class Page_aj(Page):
         total = 0
         #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
         for i in range(5):
-            if(self.data.rate_list[i].get()!= 0):
+            if(self.data.rate_list[i].get()!= ""):
                 
                 labour = self.data.labour_list[i].get()
                 if(labour[-1]=='%'):
-                    labour = int(labour[:-1])/100*self.data.rate_list[i].get()
+                    labour = int(labour[:-1])/100*float(self.data.rate_list[i].get())
                 else:
                     labour = int(labour)
-                if(self.data.gram_list[i].get()==0):
-                    self.data.total_list[i].set(round((((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*self.data.rate_list[i].get())+labour)*1.03,2))
+                if(floor(float(self.data.weight_list[i].get()))==0):
+                    self.data.total_list[i].set(round((((float(self.data.weight_list[i].get()))*float(self.data.rate_list[i].get()))+labour)*1.03,2))
                     total+=self.data.total_list[i].get()
                 else:
-                    self.data.total_list[i].set(round((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get()+labour)*1.03,2))
+                    self.data.total_list[i].set(round(float(self.data.weight_list[i].get())*(float(self.data.rate_list[i].get())+labour)*1.03,2))
                     total+=self.data.total_list[i].get()
         self.data.total.set(round(total))
         return
@@ -219,10 +200,9 @@ class Page_aj(Page):
         self.data.payment_method.set('')
         for i in range(5):
             self.data.desc_list[i].set('')
-            self.data.gram_list[i].set(0)
-            self.data.mgram_list[i].set(0)
-            self.data.rate_list[i].set(0)
-            self.data.labour_list[i].set(0)
+            self.data.weight_list[i].set('')
+            self.data.rate_list[i].set('')
+            self.data.labour_list[i].set('')
             self.data.total_list[i].set(0.0)
         self.data.isgenerated = False
         return
@@ -268,14 +248,17 @@ class Page_aj(Page):
         particulars = []
         #Details
         for i in range(5):
-            if(self.data.rate_list[i].get() != 0):
-                entry = [i,bill_id,self.data.desc_list[i].get().title(),self.data.gram_list[i].get(),self.data.mgram_list[i].get(),self.data.rate_list[i].get(),self.data.labour_list[i].get(),self.data.total_list[i].get()]
+            if(self.data.rate_list[i].get() != ""):
+                mgram,gram = modf(float(self.data.weight_list[i].get()))
+                gram=int(gram)
+                mgram = int(round(mgram,3)*1000)
+                entry = [i,bill_id,self.data.desc_list[i].get().title(),gram,mgram,float(self.data.rate_list[i].get()),self.data.labour_list[i].get(),self.data.total_list[i].get()]
                 pdf.set_xy(13,22.1*i+99.8)
                 pdf.multi_cell(w=51.8,h=22.1,align="C",txt=(entry[2]))
                 pdf.set_xy(65,22.1*i+99.8)
                 pdf.cell(w=14,h=22.1  ,align="C",txt=str(entry[3]))
                 pdf.cell(w=14,h=22.1  ,align="C",txt=str(entry[4]).zfill(3))
-                pdf.cell(w=23.4,h=22.1,align="C",txt=str(entry[5]))
+                pdf.cell(w=23.4,h=22.1,align="C",txt=self.data.rate_list[i].get())
                 pdf.cell(w=27.7,h=22.1,align="C",txt=str(entry[6]))
                 pdf.cell(w=24.6,h=22.1,align="C",txt="3%")
                 pdf.cell(w=33.8,h=22.1,align="C",txt=str(entry[7]))
@@ -313,15 +296,9 @@ class Page_aj(Page):
         output_pdf.write(open(self.data.filename,'wb'))
         
         os.startfile(self.data.filename, "open")
-        self.data.isgenerated = True
-        
-        return
     def print_bill(self):
-        if(self.data.isgenerated == False):
-            self.billing_section()
-        
+        self.billing_section()
         os.startfile(self.data.filename, "print")
-        return
     # def exit(self.data):
     #     return
 class page_rest(Page):
@@ -381,77 +358,27 @@ class page_rest(Page):
 
         # root.columnconfigure(0,1)
         
-        
         desc_lbl = Label(F2,text="Particulars", bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=0, padx=20)
-        description_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[0])
-        description_0.grid(row=1,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_1 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[1])
-        description_1.grid(row=2,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_2 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[2])
-        description_2.grid(row=3,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_3 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[3])
-        description_3.grid(row=4,column=0,padx=5, pady=3, ipady=5, ipadx=5)
-        description_4 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[4])
-        description_4.grid(row=5,column=0,padx=5, pady=3, ipady=5, ipadx=5)
+        descriptions = []
+        for i in range(5):
+            descriptions.append(Entry(F2,relief=RAISED,bg="pink" if i%2==0 else "white",font=('Calibri', 18, "bold"),textvariable=self.data.desc_list[i]))
+            descriptions[i].grid(row=i+1,column=0,padx=5, pady=3, ipady=5, ipadx=5)
+            AutocompleteCombobox(descriptions[i],self.setter_fn(descriptions[i])).set_completion_list(self.db.get_category_lists)
 
-        W_gram_lbl = Label(F2, text="Gram",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
+        weight_lbl = Label(F2, text="Weights",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=1, padx=20)
-        gram_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[0])
-        gram_0.grid(row=1,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_1 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[1])
-        gram_1.grid(row=2,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_2 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[2])
-        gram_2.grid(row=3,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_3 = Entry(F2,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[3])
-        gram_3.grid(row=4,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-        gram_4 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.gram_list[4])
-        gram_4.grid(row=5,column=1,padx=2, pady=3, ipady=5, ipadx=2)
-
-        W_milli_gram_lbl = Label(F2, text="Milli Gram",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
-        row=0, column=2, padx=20)
-        mgram_0 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[0],bg="pink",font=('Calibri', 18, "bold"))
-        mgram_0.grid(row=1,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_1 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[1],font=('Calibri', 18, "bold"))
-        mgram_1.grid(row=2,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_2 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[2],bg="pink",font=('Calibri', 18, "bold"))
-        mgram_2.grid(row=3,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_3 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[3],font=('Calibri', 18, "bold"))
-        mgram_3.grid(row=4,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-        mgram_4 = Entry(F2,relief=RAISED,textvariable=self.data.mgram_list[4],bg="pink",font=('Calibri', 18, "bold"))
-        mgram_4.grid(row=5,column=2,padx=2, pady=3, ipady=5, ipadx=2)
-
-        rate_lbl = Label(F2, text="Rate(per gram)",bg=self.data.bg_color, fg=self.data.fg_color,font=("Calibri", 15, "bold")).grid(row=0, column=3, padx=20)
-        rate_0 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[0],bg="pink",font=('Calibri', 18, "bold"))
-        rate_0.grid(row=1,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_1 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[1],font=('Calibri', 18, "bold"))
-        rate_1.grid(row=2,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_2 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[2],bg="pink",font=('Calibri', 18, "bold"))
-        rate_2.grid(row=3,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_3 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[3],font=('Calibri', 18, "bold"))
-        rate_3.grid(row=4,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-        rate_4 = Entry(F2,relief=RAISED,textvariable=self.data.rate_list[4],bg="pink",font=('Calibri', 18, "bold"))
-        rate_4.grid(row=5,column=3,padx=2, pady=3, ipady=5, ipadx=2)
-
+        weights = []
+        for i in range(5):    
+            weights.append(Entry(F2,relief=RAISED,bg="pink" if i%2==0 else "white",font=('Calibri', 18, "bold"),textvariable=self.data.weight_list[i]))
+            weights[i].grid(row=i+1,column=1,padx=2, pady=3, ipady=5, ipadx=2)
         
-        # Fr.columnconfigure(0,weight=1)
+        rate_lbl = Label(F2, text="Rate(per gram)",bg=self.data.bg_color, fg=self.data.fg_color,font=("Calibri", 15, "bold")).grid(row=0, column=2, padx=20)
+        rates = []
+        for i in range(5):    
+            rates.append(Entry(F2,relief=RAISED,bg="pink" if i%2==0 else "white",font=('Calibri', 18, "bold"),textvariable=self.data.rate_list[i]))
+            rates[i].grid(row=i+1,column=2,padx=2, pady=3, ipady=5, ipadx=2)
         
-        
-        # labour_charge_lbl = Label(F2, text="Labour",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
-        # row=0, column=4, padx=20)
-        # labour_charge_0 = Entry(F2,relief=RAISED,bg="pink",font=('Calibri', 18, "bold"),textvariable=self.data.labour_list[0])
-        # labour_charge_0.grid(row=1,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        # labour_charge_1 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[1],font=('Calibri', 18, "bold"))
-        # labour_charge_1.grid(row=2,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        # labour_charge_2 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[2],bg="pink",font=('Calibri', 18, "bold"))
-        # labour_charge_2.grid(row=3,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        # labour_charge_3 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[3],font=('Calibri', 18, "bold"))
-        # labour_charge_3.grid(row=4,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        # labour_charge_4 = Entry(F2,relief=RAISED,textvariable=self.data.labour_list[4],bg="pink",font=('Calibri', 18, "bold"))
-        # labour_charge_4.grid(row=5,column=4,padx=2, pady=3, ipady=5, ipadx=2)
-        
-        # Fl.columnconfigure(0,weight=1)
-
         amount_lbl = Label(F4, text="Amount",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=0, padx=20)
         amount_en = Entry(F4,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.pretotal)
@@ -489,12 +416,21 @@ class page_rest(Page):
         F2.columnconfigure(4,weight=1)
         
         customername_en.focus()
-        widgets=[customername_en,customergst_en, customerinvoice_en, customeraddress_en,date_en, description_0, gram_0, mgram_0, rate_0,description_1, gram_1, mgram_1, rate_1, description_2, gram_2, mgram_2, rate_2,description_3, gram_3, mgram_3, rate_3,description_4, gram_4, mgram_4, rate_4]
-
+        widgets=[customername_en,customergst_en, customerinvoice_en, customeraddress_en,date_en]
+        # , description_0, gram_0, rate_0, labour_charge_0,description_1, gram_1, rate_1, labour_charge_1,description_2, gram_2, rate_2, labour_charge_2,description_3, gram_3, rate_3, labour_charge_3,description_4, gram_4, rate_4, labour_charge_4]
         for w in widgets:
             w.lift()
+        for i in range(5):
+            descriptions[i].lift()
+            weights[i].lift()
+            rates[i].lift()
     def close(self):
         self.db.close()
+    def setter_fn(self,entry:Entry):
+        def fn(_id):
+            entry.delete(0,END)
+            entry.insert(0,self.db.get_category_name(_id))
+        return fn
     def set_whole_data(self,id):
         list_data = self.db.get_whole_custdetails(id)
         self.data.cust_name.set(list_data[0][0])
@@ -506,13 +442,16 @@ class page_rest(Page):
         total_g =0
         #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
         for i in range(5):
-            if(self.data.rate_list[i].get() != 0):
-                self.data.total_pretax_list[i].set(round((self.data.gram_list[i].get() +(self.data.mgram_list[i].get()/1000))*(self.data.rate_list[i].get())))
+            if(self.data.rate_list[i].get() != ""):
+                mgram,gram = modf(float(self.data.weight_list[i].get()))
+                gram=int(gram)
+                mgram = int(round(mgram,3)*1000)
+                self.data.total_pretax_list[i].set(round((float(self.data.weight_list[i].get()))*(float(self.data.rate_list[i].get()))))
                 self.data.total_posttax_list[i].set(round(self.data.total_pretax_list[i].get()*1.03,2))
                 self.data.tax_list[i].set(round(self.data.total_pretax_list[i].get()*0.015,1))
                 total+=self.data.total_pretax_list[i].get()
-                total_mg += self.data.mgram_list[i].get()
-                total_g += self.data.gram_list[i].get()
+                total_mg += mgram
+                total_g += gram
         self.data.pretotal.set(total)
         self.data.total_tax.set(total*0.015)
         self.data.total_mgram.set(total_mg%1000)
@@ -575,13 +514,16 @@ class page_rest(Page):
         if(state):
             #Details
             for i in range(5):
-                if(self.data.rate_list[i].get() != 0):
-                    entry = [i,bill_id,self.data.desc_list[i].get().title(),self.data.gram_list[i].get(),self.data.mgram_list[i].get(),self.data.rate_list[i].get()]
+                if(self.data.rate_list[i].get() != ""):
+                    mgram,gram = modf(float(self.data.weight_list[i].get()))
+                    gram=int(gram)
+                    mgram = int(round(mgram,3)*1000)
+                    entry = [i,bill_id,self.data.desc_list[i].get().title(),gram,mgram,float(self.data.rate_list[i].get())]
                     pdf.set_xy(2.8,19.76*i+88.1)
                     pdf.multi_cell(w=40.9,h=19.76,align="C",txt=self.data.desc_list[i].get().title())
                     pdf.set_xy(43.7,19.76*i+88.1)
-                    pdf.cell(w=19.3,h=19.76  ,align="C",txt=str(self.data.gram_list[i].get()))
-                    pdf.cell(w=19.6,h=19.76  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
+                    pdf.cell(w=19.3,h=19.76  ,align="C",txt=str(gram))
+                    pdf.cell(w=19.6,h=19.76  ,align="C",txt=str(mgram).zfill(3))
                     pdf.cell(w=22.1,h=19.76,align="C",txt=str(self.data.rate_list[i].get()))
                     pdf.cell(w=25.1,h=19.76,align="C",txt=str(self.data.total_pretax_list[i].get()))
                     pdf.cell(w=19.1,h=19.76,align="C",txt=str(self.data.tax_list[i].get()))
@@ -604,13 +546,16 @@ class page_rest(Page):
             
             #Details
             for i in range(5):
-                if(self.data.rate_list[i].get() != 0):
-                    entry = [i,bill_id,self.data.desc_list[i].get().title(),self.data.gram_list[i].get(),self.data.mgram_list[i].get(),self.data.rate_list[i].get()]
+                if(self.data.rate_list[i].get() != ""):
+                    mgram,gram = modf(float(self.data.weight_list[i].get()))
+                    gram=int(gram)
+                    mgram = int(round(mgram,3)*1000)
+                    entry = [i,bill_id,self.data.desc_list[i].get().title(),gram,mgram,float(self.data.rate_list[i].get())]
                     pdf.set_xy(2.8,19.76*i+88.1)
                     pdf.multi_cell(w=40.9,h=19.76,align="C",txt=self.data.desc_list[i].get().title())
                     pdf.set_xy(43.7,19.76*i+88.1)
-                    pdf.cell(w=19.3,h=19.76  ,align="C",txt=str(self.data.gram_list[i].get()))
-                    pdf.cell(w=19.6,h=19.76  ,align="C",txt=str(self.data.mgram_list[i].get()).zfill(3))
+                    pdf.cell(w=19.3,h=19.76  ,align="C",txt=str(gram))
+                    pdf.cell(w=19.6,h=19.76  ,align="C",txt=str(mgram).zfill(3))
                     pdf.cell(w=22.1,h=19.76,align="C",txt=str(self.data.rate_list[i].get()))
                     pdf.cell(w=40,h=19.76,align="C",txt=str(self.data.total_pretax_list[i].get()))
                     pdf.cell(w=22.5,h=19.76,align="C",txt=str(self.data.tax_list[i].get()*2))
@@ -652,7 +597,6 @@ class page_rest(Page):
         
         # os.startfile(filename, "print")
         os.startfile(self.data.filename, "open")
-        return
     def clear(self):
         self.data.cust_name.set('')
         self.data.cust_add.set('')
@@ -660,9 +604,8 @@ class page_rest(Page):
         self.data.inv_num.set(self.data.inv_num.get()+1)
         for i in range(5):
             self.data.desc_list[i].set('')
-            self.data.gram_list[i].set(0)
-            self.data.mgram_list[i].set(0)
-            self.data.rate_list[i].set(0)
+            self.data.weight_list[i].set('')
+            self.data.rate_list[i].set('')
             self.data.total_pretax_list[i].set(0)
             self.data.total_posttax_list[i].set(0)
             self.data.tax_list[i].set(0)
