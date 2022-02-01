@@ -1,5 +1,5 @@
 
-from tkinter import Button, Entry, Label, LabelFrame, Listbox
+from tkinter import Button, Entry, Label, LabelFrame, Listbox, messagebox
 from tkinter.constants import END, OUTSIDE, RAISED
 import pages
 from database import Database
@@ -27,6 +27,29 @@ class page_admin(pages.Page):
         add_alias_btn.grid(row=2,column=2,ipady=4, ipadx=30, pady=2)
         add_cat_btn = Button(F1,text='Add Category',bg='#f8edeb' , fg='#264653', font=("lucida", 12, "bold"), bd=7, relief=RAISED,command=self.add_category)
         add_cat_btn.grid(row=3,column=2,ipady=4, ipadx=30, pady=2)
+        del_cat_btn = Button(F1,text='Delete Category',bg='#f8edeb' , fg='#264653', font=("lucida", 12, "bold"), bd=7, relief=RAISED,command=self.delete_category)
+        del_cat_btn.grid(row=3,column=3,ipady=4, ipadx=30, pady=2)
+        del_alias_btn = Button(F1,text='Delete Alias',bg='#f8edeb' , fg='#264653', font=("lucida", 12, "bold"), bd=7, relief=RAISED,command=self.delete_alias)
+        del_alias_btn.grid(row=2,column=3,ipady=4, ipadx=30, pady=2)
+        
+    def delete_category(self):
+        _id_tuple = self.db.get_category_id(self.category_en.get())
+        if _id_tuple is None:
+            messagebox.showinfo('Invalid Category',f'{self.category_en.get()} Not Found')
+        else:
+            self.db.del_categoty(_id_tuple[0])
+            self.aliases_en_l.delete(0,END)
+            self.category_en.focus()
+    def delete_alias(self):
+        try:    
+            _id_tuple = self.db.get_alias_id(self.aliases_en_l.selection_get())
+            if _id_tuple is None:
+                messagebox.showinfo('Invalid Category',f'{self.category_en.get()} Not Found')
+            else:
+                self.db.del_alias(_id_tuple[0])
+                self.fill_alias(self.db.get_category_id(self.category_en.get())[0])
+        except:
+            pass
     def add_alias(self):
         self.db.insert_alias(self._id,self.aliases_en.get())
         self.fill_alias(self._id)
@@ -37,4 +60,5 @@ class page_admin(pages.Page):
         for alias in aliases:
             self.aliases_en_l.insert(END,alias)
     def add_category(self):
-        self.db.insert_categories(self.category_en.get())
+        _id = self.db.insert_categories(self.category_en.get())
+        self.fill_alias(_id)

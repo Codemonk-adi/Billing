@@ -110,6 +110,7 @@ class Page_aj(Page):
         row=0, column=0, padx=20)
         total_en = Entry(F4,relief=RAISED,font=('Calibri', 18, "bold"),textvariable=self.data.total)
         total_en.grid(row=1,column=0,padx=5)
+        
         #payment methods
         payment_lbl = Label(F4, text="Payment Method",bg=self.data.bg_color, fg=self.data.fg_color, font=("Calibri", 15, "bold")).grid(
         row=0, column=1, padx=20)
@@ -176,18 +177,21 @@ class Page_aj(Page):
         #formula total+=(gram+(milligram/1000))*((rate/10)+labour)*1.03
         for i in range(5):
             if(self.data.rate_list[i].get()!= ""):
-                
-                labour = self.data.labour_list[i].get()
-                if(labour[-1]=='%'):
-                    labour = int(labour[:-1])/100*float(self.data.rate_list[i].get())
-                else:
-                    labour = int(labour)
-                if(floor(float(self.data.weight_list[i].get()))==0):
-                    self.data.total_list[i].set(round((((float(self.data.weight_list[i].get()))*float(self.data.rate_list[i].get()))+labour)*1.03,2))
+                if(self.data.rate_list[i].get()[-1]=='/'):
+                    self.data.total_list[i].set(round(float(self.data.rate_list[i].get()[:-1])*1.03,2))
                     total+=self.data.total_list[i].get()
                 else:
-                    self.data.total_list[i].set(round(float(self.data.weight_list[i].get())*(float(self.data.rate_list[i].get())+labour)*1.03,2))
-                    total+=self.data.total_list[i].get()
+                    labour = self.data.labour_list[i].get()
+                    if(labour[-1]=='%'):
+                        labour = float(labour[:-1])/100*float(self.data.rate_list[i].get())
+                    else:
+                        labour = float(labour)
+                    if(floor(float(self.data.weight_list[i].get()))==0):
+                        self.data.total_list[i].set(round((((float(self.data.weight_list[i].get()))*float(self.data.rate_list[i].get()))+labour)*1.03,2))
+                        total+=self.data.total_list[i].get()
+                    else:
+                        self.data.total_list[i].set(round(float(self.data.weight_list[i].get())*(float(self.data.rate_list[i].get())+labour)*1.03,2))
+                        total+=self.data.total_list[i].get()
         self.data.total.set(round(total))
         return
     
@@ -249,16 +253,26 @@ class Page_aj(Page):
         #Details
         for i in range(5):
             if(self.data.rate_list[i].get() != ""):
-                mgram,gram = modf(float(self.data.weight_list[i].get()))
-                gram=int(gram)
-                mgram = int(round(mgram,3)*1000)
-                entry = [i,bill_id,self.data.desc_list[i].get().title(),gram,mgram,float(self.data.rate_list[i].get()),self.data.labour_list[i].get(),self.data.total_list[i].get()]
+                rate = self.data.rate_list[i].get()
+                if rate[-1]=='/':
+                    rate = rate + 'Pc'    
+                    if(self.data.weight_list[i].get()!=''):
+                        mgram,gram = modf(float(self.data.weight_list[i].get()))
+                        gram=str(int(gram))
+                        mgram = str(int(round(mgram,3)*1000)).zfill(3)
+                    else:
+                        gram,mgram = ("","")
+                else:
+                        mgram,gram = modf(float(self.data.weight_list[i].get()))
+                        gram=str(int(gram))
+                        mgram = str(int(round(mgram,3)*1000)).zfill(3)
+                entry = [i,bill_id,self.data.desc_list[i].get().title(),gram,mgram,float(rate[:-3]),self.data.labour_list[i].get(),self.data.total_list[i].get()]
                 pdf.set_xy(13,22.1*i+99.8)
                 pdf.multi_cell(w=51.8,h=22.1,align="C",txt=(entry[2]))
                 pdf.set_xy(65,22.1*i+99.8)
                 pdf.cell(w=14,h=22.1  ,align="C",txt=str(entry[3]))
-                pdf.cell(w=14,h=22.1  ,align="C",txt=str(entry[4]).zfill(3))
-                pdf.cell(w=23.4,h=22.1,align="C",txt=self.data.rate_list[i].get())
+                pdf.cell(w=14,h=22.1  ,align="C",txt=str(entry[4]))
+                pdf.cell(w=23.4,h=22.1,align="C",txt=rate)
                 pdf.cell(w=27.7,h=22.1,align="C",txt=str(entry[6]))
                 pdf.cell(w=24.6,h=22.1,align="C",txt="3%")
                 pdf.cell(w=33.8,h=22.1,align="C",txt=str(entry[7]))

@@ -149,7 +149,7 @@ class AutocompleteCombobox():
     def handle_return(self,event:Event):
         if event.keysym == "Return":
             self._entry.delete(0,END)
-            self._entry.insert(0,self._hits[self.listbox.curselection()[0]])
+            self._entry.insert(0,self.listbox.selection_get())
             _id=self._completion_list.get(self._hits[self.listbox.curselection()[0]])
             self._entry.focus()
             self._forget_listbox()

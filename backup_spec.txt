@@ -1,0 +1,38 @@
+# -*- mode: python ; coding: utf-8 -*-
+
+block_cipher = None
+
+
+a = Analysis(['Bill_aj.py'],
+             pathex=['C:\\Users\\Aaditya\\Documents\\GitHub\\Billing','C:/Users/Aaditya/miniconda3/envs/Bill/lib/site-packages'],
+             binaries=[],
+             datas=[('arialB.ttf','.'),('Quivira.otf','.'),('bill_temp_v3.pdf','.'),('Wholesale_template_v3.pdf','.'),('wholesale_template_igst.pdf','.'),('Bill_aj_g.ico','.')],
+             hiddenimports=[],
+             hookspath=[],
+             runtime_hooks=[],
+             excludes=[],
+             win_no_prefer_redirects=False,
+             win_private_assemblies=False,
+             cipher=block_cipher,
+             noarchive=False)
+pyz = PYZ(a.pure, a.zipped_data,
+             cipher=block_cipher)
+exe = EXE(pyz,
+          a.scripts,
+          [],
+          exclude_binaries=True,
+          name='Bill_aj',
+          debug=False,
+          bootloader_ignore_signals=False,
+          strip=False,
+          upx=True,
+          console=False,
+          icon='Bill_aj_g.ico' )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='Bill_aj')

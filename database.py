@@ -1,4 +1,5 @@
 import sqlite3 as sql
+print(sql.sqlite_version)
 class Database():
     '''
     Class to store bills and user info.
@@ -17,6 +18,7 @@ class Database():
     def create_tables(self):
         """Creates Tables."""
         self.cur.executescript('''
+        PRAGMA foreign_keys = ON;
         CREATE TABLE IF NOT EXISTS Retail_Cust(
             ID INTEGER ,
             NAME VARCHAR(255) NOT NULL,
@@ -230,9 +232,35 @@ class Database():
                         select _Name from categories where ID={category} 
                         ''')
         return self.cur.fetchone()[0]
+    
+    def get_category_id(self,category:str):
+        """Returns the id of the category given its Name."""
+        self.cur.execute(f'''
+                        select ID from categories where _Name="{category}" 
+                        ''')
+        return self.cur.fetchone()
+    def get_alias_id(self,alias:str):
+        """Returns the id of the alias given its Name."""
+        self.cur.execute(f'''
+                        select ID from alias where _Name="{alias}" 
+                        ''')
+        return self.cur.fetchone()
     def get_aliases(self,category:int):
         """Returns all the aliases of the given id."""
         self.cur.execute(f'''
                         Select _Name from alias where category={category}
                         ''')
         return self.cur.fetchall()
+    def del_categoty(self,category:int):
+        """Deletes Category with the given ID."""
+        self.cur.execute(f'''
+                        Delete from categories where ID = {category}
+                        ''')
+        self.conn.commit()
+    def del_alias(self,alias_id:int):
+        """Deletes a particular alias given ID."""
+        self.cur.execute(f'''
+                        Delete from alias where ID = {alias_id}
+                        ''')
+        self.conn.commit()
+        
