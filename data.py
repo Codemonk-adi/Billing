@@ -1,6 +1,6 @@
 from tkinter import StringVar,IntVar,DoubleVar
 from datetime import date
-
+#to be saved
 class data_rest():
     def __init__(self):
         self.acc_no = StringVar()

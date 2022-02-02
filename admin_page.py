@@ -62,3 +62,5 @@ class page_admin(pages.Page):
     def add_category(self):
         _id = self.db.insert_categories(self.category_en.get())
         self.fill_alias(_id)
+        
+#to be saved
